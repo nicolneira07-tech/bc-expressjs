@@ -1,20 +1,24 @@
 {
-  "name": "bc-expressjs-semana01-logistica",
+  "name": "bc-expressjs-semana02-logistica",
   "version": "1.0.0",
-  "description": "Proyecto semanal — Procesador de inventario de almacén con Node.js + TypeScript",
+  "description": "Proyecto semanal — API REST CRUD de inventario de almacén con Express 5 + TypeScript",
+  "main": "dist/server.js",
   "engines": {
     "node": ">=22.0.0"
   },
   "packageManager": "pnpm@10.34.5",
   "scripts": {
-    "dev": "tsx src/index.ts",
-    "build": "tsc --noEmit",
-    "start": "node dist/src/index.js"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "5.1.0"
   },
   "devDependencies": {
+    "@types/express": "5.0.1",
     "@types/node": "22.15.21",
     "tsx": "4.19.4",
     "typescript": "5.8.3"
-  },
-  "type": "module"
+  }
 }

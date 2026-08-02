@@ -1,44 +1,81 @@
-# Capturas — Semana 01
+# Capturas — Semana 02
 
-La rúbrica pide "Screenshots o logs de la herramienta ejecutándose con distintos argumentos". Guarda aquí las imágenes (o pega el log de la terminal en un `.txt`/`.md`) con estos 4 casos:
+La rúbrica pide "Screenshots de Postman o Thunder Client con las 5 operaciones funcionando". Guarda aquí las imágenes (o el log de la terminal en un `.txt`/`.md`) con estos casos, todos contra `http://localhost:3000/api/v1/inventory-items` (levanta el servidor antes con `pnpm dev`):
 
-## 1. `01-sin-filtro.png` — ejecución sin filtro
+## 1. `01-get-all.png` — listar todos los ítems
 
-Comando:
-```bash
-pnpm dev
 ```
-Debe mostrarse el resumen completo: total, activos/inactivos, precio promedio, más caro/barato, categorías.
-
-## 2. `02-con-filtro.png` — ejecución con `--category`
-
-Comando:
-```bash
-pnpm dev -- --category packaging
+GET /api/v1/inventory-items
 ```
-Debe mostrarse el resumen filtrado solo a esa categoría.
+Debe responder `200` con el array completo (12 ítems sembrados).
 
-## 3. `03-categoria-inexistente.png` — manejo de error de categoría
+## 2. `02-get-by-id.png` — obtener un ítem existente
 
-Comando:
-```bash
-pnpm dev -- --category no-existe
 ```
-Debe mostrarse el mensaje de error listando las categorías disponibles, y el proceso debe terminar con código de salida 1 (no crashea con un stack trace sin manejar).
-
-## 4. `04-build.png` — compilación sin errores
-
-Comando:
-```bash
-pnpm build
+GET /api/v1/inventory-items/WH-001
 ```
-Debe terminar sin errores de TypeScript (sin salida = éxito, ya que `build` usa `tsc --noEmit`).
+Debe responder `200` con el ítem.
+
+## 3. `03-get-404.png` — ítem inexistente
+
+```
+GET /api/v1/inventory-items/WH-999
+```
+Debe responder `404` con `{ "error": "..." }`.
+
+## 4. `04-post-crear.png` — crear un ítem
+
+```
+POST /api/v1/inventory-items
+Content-Type: application/json
+
+{
+  "name": "Montacargas eléctrico",
+  "category": "electronics",
+  "price": 15000,
+  "stock": 2,
+  "location": "F-01",
+  "active": true
+}
+```
+Debe responder `201` con el ítem creado (id autogenerado `WH-013`).
+
+## 5. `05-post-validacion-400.png` — validación de campos requeridos
+
+```
+POST /api/v1/inventory-items
+Content-Type: application/json
+
+{ "name": "Sin campos" }
+```
+Debe responder `400` con el detalle de los campos faltantes.
+
+## 6. `06-put-actualizar.png` — actualizar un ítem
+
+```
+PUT /api/v1/inventory-items/WH-013
+Content-Type: application/json
+
+{
+  "name": "Montacargas eléctrico",
+  "category": "electronics",
+  "price": 15500,
+  "stock": 3,
+  "location": "F-01",
+  "active": true
+}
+```
+Debe responder `200` con el ítem actualizado.
+
+## 7. `07-delete.png` — eliminar un ítem
+
+```
+DELETE /api/v1/inventory-items/WH-013
+```
+Debe responder `204` sin body. Repetir la misma petición debe responder `404`.
 
 ## Cómo tomar la captura (Windows)
 
-1. Abre una terminal en la carpeta del proyecto y corre el comando.
-2. Con la ventana de la terminal activa, presiona **`Win + Shift + S`** → selecciona el recorte → se copia al portapapeles.
-3. Pega la imagen (`Ctrl+V`) en Paint (o cualquier editor) y guárdala como PNG en esta carpeta con el nombre indicado arriba.
-4. Alternativa sin imágenes: copia el texto de la terminal y pégalo en un archivo `.txt` con el mismo nombre (ej. `01-sin-filtro.txt`) — la rúbrica acepta "screenshots **o logs**".
-
-No olvides también dejar el archivo `output/report.json` generado (se crea solo al correr `pnpm dev`) — ese si va en la raíz del proyecto, no aquí.
+1. Con Postman o Thunder Client (extensión de VS Code) apuntando a `http://localhost:3000`, ejecuta cada petición.
+2. Captura la ventana con **`Win + Shift + S`** → pega en Paint (`Ctrl+V`) → guarda como PNG en esta carpeta con el nombre indicado arriba.
+3. Alternativa sin imágenes: guarda la salida de cada `curl -i ...` en un `.txt` con el mismo nombre — la rúbrica acepta "screenshots **o logs**".

@@ -2,6 +2,7 @@
 // TIPOS — Dominio: Logística / Almacén
 // ============================================
 // Recurso principal: InventoryItem (ítem de inventario de almacén)
+// Mismos campos que la semana 01 — ahora expuestos vía API REST en vez de CLI.
 
 export interface InventoryItem {
   id: string;
@@ -13,21 +14,8 @@ export interface InventoryItem {
   active: boolean;
 }
 
-// Resumen que el procesador debe calcular
-export interface InventoryItemSummary {
-  total: number;
-  active: number;
-  inactive: number;
-  averagePrice: number;
-  mostExpensive: InventoryItem;
-  cheapest: InventoryItem;
-  categories: string[];
-}
+// DTO usado para crear un nuevo ítem (sin id, se genera automáticamente)
+export type CreateInventoryItemDto = Omit<InventoryItem, 'id'>;
 
-// Reporte final que se escribirá en output/report.json
-export interface Report {
-  generatedAt: string;
-  appliedFilter: string | null;
-  summary: InventoryItemSummary;
-  items: InventoryItem[];
-}
+// DTO para actualización completa (PUT) — mismos campos, editables
+export type UpdateInventoryItemDto = Partial<CreateInventoryItemDto>;
