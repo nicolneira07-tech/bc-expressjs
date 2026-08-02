@@ -1,35 +1,31 @@
 {
-  "generatedAt": "2026-08-02T03:05:40.699Z",
-  "appliedFilter": null,
+  "generatedAt": "2026-08-02T03:16:48.968Z",
+  "appliedFilter": "packaging",
   "summary": {
-    "total": 12,
-    "active": 10,
-    "inactive": 2,
-    "averagePrice": 192.68,
+    "total": 2,
+    "active": 2,
+    "inactive": 0,
+    "averagePrice": 16.7,
     "mostExpensive": {
-      "id": "WH-011",
-      "name": "Bobina de acero laminado",
-      "category": "raw-materials",
-      "price": 890,
-      "stock": 6,
-      "location": "E-01",
+      "id": "WH-002",
+      "name": "Film stretch industrial",
+      "category": "packaging",
+      "price": 24.9,
+      "stock": 120,
+      "location": "A-02",
       "active": true
     },
     "cheapest": {
-      "id": "WH-010",
-      "name": "Guantes anticorte",
-      "category": "safety-equipment",
-      "price": 6.25,
-      "stock": 300,
-      "location": "D-03",
+      "id": "WH-001",
+      "name": "Pallet de cartón corrugado",
+      "category": "packaging",
+      "price": 8.5,
+      "stock": 500,
+      "location": "A-01",
       "active": true
     },
     "categories": [
-      "packaging",
-      "electronics",
-      "spare-parts",
-      "safety-equipment",
-      "raw-materials"
+      "packaging"
     ]
   },
   "items": [
@@ -50,96 +46,6 @@
       "stock": 120,
       "location": "A-02",
       "active": true
-    },
-    {
-      "id": "WH-003",
-      "name": "Escáner de código de barras",
-      "category": "electronics",
-      "price": 189.99,
-      "stock": 15,
-      "location": "B-05",
-      "active": true
-    },
-    {
-      "id": "WH-004",
-      "name": "Impresora de etiquetas térmica",
-      "category": "electronics",
-      "price": 259,
-      "stock": 8,
-      "location": "B-06",
-      "active": true
-    },
-    {
-      "id": "WH-005",
-      "name": "Rodamiento industrial 6205",
-      "category": "spare-parts",
-      "price": 12.75,
-      "stock": 200,
-      "location": "C-10",
-      "active": true
-    },
-    {
-      "id": "WH-006",
-      "name": "Correa transportadora 5m",
-      "category": "spare-parts",
-      "price": 340,
-      "stock": 4,
-      "location": "C-11",
-      "active": true
-    },
-    {
-      "id": "WH-007",
-      "name": "Motor reductor 1HP",
-      "category": "spare-parts",
-      "price": 410,
-      "stock": 0,
-      "location": "C-12",
-      "active": false
-    },
-    {
-      "id": "WH-008",
-      "name": "Casco de seguridad",
-      "category": "safety-equipment",
-      "price": 15.5,
-      "stock": 80,
-      "location": "D-01",
-      "active": true
-    },
-    {
-      "id": "WH-009",
-      "name": "Chaleco reflectivo",
-      "category": "safety-equipment",
-      "price": 9.99,
-      "stock": 150,
-      "location": "D-02",
-      "active": true
-    },
-    {
-      "id": "WH-010",
-      "name": "Guantes anticorte",
-      "category": "safety-equipment",
-      "price": 6.25,
-      "stock": 300,
-      "location": "D-03",
-      "active": true
-    },
-    {
-      "id": "WH-011",
-      "name": "Bobina de acero laminado",
-      "category": "raw-materials",
-      "price": 890,
-      "stock": 6,
-      "location": "E-01",
-      "active": true
-    },
-    {
-      "id": "WH-012",
-      "name": "Rollo de plástico reciclado",
-      "category": "raw-materials",
-      "price": 145.3,
-      "stock": 0,
-      "location": "E-02",
-      "active": false
     }
   ]
 }
