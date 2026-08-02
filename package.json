@@ -1,0 +1,20 @@
+{
+  "name": "bc-expressjs-semana01-logistica",
+  "version": "1.0.0",
+  "description": "Proyecto semanal — Procesador de inventario de almacén con Node.js + TypeScript",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.34.5",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "node dist/src/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3"
+  },
+  "type": "module"
+}

@@ -1,0 +1,20 @@
+# Node / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+pnpm-lock.yaml
+
+# Entornos y secretos
+.env
+.env.local
+
+# Logs y temporales
+*.log
+.cache/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Notas personales de estudio (no son parte de la entrega)
+APUNTES-SEMANA-*.md
