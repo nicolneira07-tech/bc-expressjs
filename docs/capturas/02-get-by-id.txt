@@ -1,0 +1,12 @@
+$ curl -i http://localhost:3000/api/v1/inventory-items/WH-001
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 131
+ETag: W/"83-aZW0dkhLiVDGwGDw8suCxGZ1kP4"
+Date: Mon, 03 Aug 2026 00:11:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"WH-001","name":"Pallet de cartón corrugado","category":"packaging","price":8.5,"stock":500,"location":"A-01","active":true}
