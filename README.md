@@ -9,46 +9,61 @@ Cada semana se entrega en su propia rama `week-<NN>`.
 | Semana | Rama | Tema |
 |---|---|---|
 | 01 | [`week-01`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-01) | Node.js Fundamentals |
-| 02 | `week-02` | Express Intro |
+| 02 | [`week-02`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-02) | Express Intro |
+| 03 | `week-03` | REST API Arquitectura en Capas |
 
 ---
 
-## Semana 02 — API REST de Inventario de Almacén
+## Semana 03 — API REST de Inventario de Almacén (arquitectura en capas)
 
-API CRUD en memoria con Express 5 + TypeScript sobre el mismo dominio de la
-semana 01 (Logística / Almacén), ahora expuesto vía HTTP en vez de un CLI.
-Sin base de datos todavía — el store vive en un array en memoria
-(`src/store.ts`), sembrado con los mismos 12 ítems de
-`week-01/data/inventory.json` para tener datos realistas desde el arranque.
+Misma API de la semana 02 (mismo dominio, mismo recurso), refactorizada a
+una arquitectura de 4 capas: `routes → controllers → services →
+repositories`. Sin base de datos todavía — el repository guarda los datos en
+un array en memoria, sembrado con 5 ítems del inventario del dominio.
 
 ### Recurso: `InventoryItem`
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `id` | `string` | Código del ítem en el almacén (ej. `WH-001`), autogenerado al crear |
+| `id` | `number` | Identificador autoincremental |
 | `name` | `string` | Nombre del ítem |
 | `category` | `string` | `packaging`, `electronics`, `spare-parts`, `safety-equipment`, `raw-materials` |
 | `price` | `number` | Costo unitario |
 | `stock` | `number` | Cantidad disponible en el almacén |
 | `location` | `string` | Ubicación física (pasillo-estante, ej. `A-01`) |
 | `active` | `boolean` | Si el ítem sigue activo en el catálogo del almacén |
+| `createdAt` | `string` | Fecha ISO de creación, autogenerada |
 
-### Endpoints
+### Arquitectura
+
+| Capa | Archivo | Responsabilidad |
+|---|---|---|
+| Routes | `src/routes/inventory-items.routes.ts` | Solo mapea URL + método → función del controller |
+| Controllers | `src/controllers/inventory-items.controller.ts` | 3 pasos: extraer → llamar service → responder. Sin lógica de negocio |
+| Services | `src/services/inventory-items.service.ts` | Lógica de negocio y paginación. Cero imports de Express |
+| Repositories | `src/repositories/inventory-items.repository.ts` | Único punto de acceso al store, siempre `async`, retorna copias defensivas |
+
+### Endpoints y contratos
 
 | Método | Ruta | Descripción | Status |
 |---|---|---|---|
-| GET | `/api/v1/inventory-items` | Listar todos los ítems | 200 |
-| GET | `/api/v1/inventory-items/:id` | Obtener un ítem por ID | 200 / 404 |
-| POST | `/api/v1/inventory-items` | Crear un ítem | 201 / 400 |
-| PUT | `/api/v1/inventory-items/:id` | Actualizar un ítem completo | 200 / 400 / 404 |
-| DELETE | `/api/v1/inventory-items/:id` | Eliminar un ítem | 204 / 404 |
+| GET | `/api/v1/inventory-items?page&limit` | Listar paginado | 200 |
+| GET | `/api/v1/inventory-items/:id` | Obtener por ID | 200 / 404 |
+| POST | `/api/v1/inventory-items` | Crear | 201 |
+| PUT | `/api/v1/inventory-items/:id` | Actualizar | 200 / 404 |
+| DELETE | `/api/v1/inventory-items/:id` | Eliminar | 204 / 404 |
 | GET | `/health` | Health check | 200 |
 
-Middlewares registrados en orden: `express.json()` → logger personalizado
-(`src/middlewares/logger.ts`) → rutas → handler 404 → error handler global
-de 4 parámetros (`src/middlewares/errorHandler.ts`). POST y PUT validan que
-los campos requeridos estén presentes y con el tipo correcto antes de tocar
-el store.
+```jsonc
+// GET /inventory-items?page=1&limit=5 → 200
+{ "data": [ /* ... */ ], "total": 5, "page": 1, "limit": 5 }
+
+// GET /inventory-items/1 → 200
+{ "data": { "id": 1, /* ... */ } }
+
+// GET /inventory-items/999 → 404
+{ "error": "Not Found", "message": "Item 999 not found" }
+```
 
 ### Cómo correr el proyecto
 
@@ -63,18 +78,18 @@ pnpm start                            # corre el build compilado (dist/server.js
 ### Probar con curl
 
 ```bash
-curl http://localhost:3000/api/v1/inventory-items
-curl http://localhost:3000/api/v1/inventory-items/WH-001
+curl "http://localhost:3000/api/v1/inventory-items?page=1&limit=2"
+curl http://localhost:3000/api/v1/inventory-items/1
 
 curl -X POST http://localhost:3000/api/v1/inventory-items \
   -H "Content-Type: application/json" \
   -d '{"name":"Montacargas eléctrico","category":"electronics","price":15000,"stock":2,"location":"F-01","active":true}'
 
-curl -X PUT http://localhost:3000/api/v1/inventory-items/WH-013 \
+curl -X PUT http://localhost:3000/api/v1/inventory-items/6 \
   -H "Content-Type: application/json" \
-  -d '{"name":"Montacargas eléctrico","category":"electronics","price":15500,"stock":3,"location":"F-01","active":true}'
+  -d '{"stock":1}'
 
-curl -X DELETE http://localhost:3000/api/v1/inventory-items/WH-013
+curl -X DELETE http://localhost:3000/api/v1/inventory-items/6
 # Esperar: 204 sin body
 ```
 

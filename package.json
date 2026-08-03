@@ -1,7 +1,7 @@
 {
-  "name": "bc-expressjs-semana02-logistica",
+  "name": "bc-expressjs-semana03-logistica",
   "version": "1.0.0",
-  "description": "Proyecto semanal — API REST CRUD de inventario de almacén con Express 5 + TypeScript",
+  "description": "Proyecto semanal — API REST de inventario de almacén con arquitectura en 4 capas",
   "main": "dist/server.js",
   "engines": {
     "node": ">=22.0.0"
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/express": "5.0.1",
-    "@types/node": "22.15.21",
+    "@types/node": "22.15.3",
     "tsx": "4.19.4",
     "typescript": "5.8.3"
   }

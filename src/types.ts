@@ -1,21 +1,43 @@
 // ============================================
-// TIPOS — Dominio: Logística / Almacén
+// TYPES — Dominio: Logística / Almacén
 // ============================================
-// Recurso principal: InventoryItem (ítem de inventario de almacén)
-// Mismos campos que la semana 01 — ahora expuestos vía API REST en vez de CLI.
+// Recurso principal: InventoryItem (mismo recurso de las semanas 01 y 02)
 
 export interface InventoryItem {
-  id: string;
+  id: number;
   name: string;
   category: string;
   price: number;
   stock: number;
   location: string;
   active: boolean;
+  createdAt: string;
 }
 
-// DTO usado para crear un nuevo ítem (sin id, se genera automáticamente)
-export type CreateInventoryItemDto = Omit<InventoryItem, 'id'>;
+// DTO para crear — sin campos auto-generados
+export type CreateInventoryItemDto = Omit<InventoryItem, 'id' | 'createdAt'>;
 
-// DTO para actualización completa (PUT) — mismos campos, editables
+// DTO para actualizar — todos los campos opcionales
 export type UpdateInventoryItemDto = Partial<CreateInventoryItemDto>;
+
+// Contratos de respuesta (genéricos, no se adaptan al dominio)
+export interface SingleResponse<T> {
+  data: T;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ErrorResponse {
+  error: string;
+  message: string;
+}
+
+export interface PaginationParams {
+  page: number;
+  limit: number;
+}

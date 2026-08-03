@@ -1,12 +1,12 @@
-$ curl -i http://localhost:3000/api/v1/inventory-items/WH-999
+$ curl -i http://localhost:3000/api/v1/inventory-items/999
 
 HTTP/1.1 404 Not Found
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
-Content-Length: 42
-ETag: W/"2a-/YPyVbvrkgzjR35YchLmSxg1wOg"
-Date: Mon, 03 Aug 2026 00:11:55 GMT
+Content-Length: 52
+ETag: W/"34-FVlzSLH/USc/GHXqvJWHOeu0tmc"
+Date: Mon, 03 Aug 2026 00:26:30 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"error":"Ítem \"WH-999\" no encontrado"}
+{"error":"Not Found","message":"Item 999 not found"}
