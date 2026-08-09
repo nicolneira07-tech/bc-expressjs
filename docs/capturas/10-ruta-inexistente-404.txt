@@ -1,0 +1,12 @@
+$ curl -i http://localhost:3000/api/v1/no-existe
+
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 82
+ETag: W/"52-4lx+Oi84MmmZ8G0PpHjCNxXrbbY"
+Date: Sun, 09 Aug 2026 23:18:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Application Error","message":"Ruta GET /api/v1/no-existe no encontrada"}

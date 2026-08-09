@@ -1,71 +1,70 @@
-# Capturas — Semana 03
+# Capturas — Semana 04
 
-La rúbrica pide "Screenshot de Thunder Client con los 5 endpoints funcionando" + "Screenshot de `pnpm build` sin errores". Guarda aquí las imágenes (o el log de la terminal en un `.txt`/`.md`) con estos casos, todos contra `http://localhost:3000/api/v1/inventory-items` (levanta el servidor antes con `pnpm dev`):
+Evidencias pedidas por la rúbrica de la semana 04 (validación con Zod, errores
+estructurados y logging). Todas se tomaron contra `http://localhost:3000` con el
+servidor levantado (`pnpm dev`), y la salida completa de cada `curl -i` está
+guardada en el `.txt` correspondiente.
 
-## 1. `01-get-all-paginado.png` — listar con paginación
+| # | Archivo | Caso | Esperado |
+|---|---|---|---|
+| 01 | `01-get-all-paginado.txt` | `GET /api/v1/inventory-items?page=1&limit=2` | `200` + `{ data, total, page, limit }` |
+| 02 | `02-get-by-id.txt` | `GET /api/v1/inventory-items/1` | `200` + `{ data: {...} }` |
+| 03 | `03-post-crear-201.txt` | `POST` con body válido | `201` + ítem creado |
+| 04 | `04-post-validacion-400.txt` | `POST` con body inválido | `400` + `issues[]` (5 campos) |
+| 05 | `05-get-id-no-numerico-400.txt` | `GET /api/v1/inventory-items/abc` | `400` + `issues[{ field: "id" }]` |
+| 06 | `06-get-inexistente-404.txt` | `GET /api/v1/inventory-items/999` | `404` (AppError del service) |
+| 07 | `07-put-actualizar-200.txt` | `PUT /api/v1/inventory-items/6` | `200` + ítem actualizado |
+| 08 | `08-post-duplicado-409.txt` | `POST` con `name` ya existente | `409` (regla de negocio) |
+| 09 | `09-delete-204.txt` | `DELETE /api/v1/inventory-items/6` | `204` sin body |
+| 10 | `10-ruta-inexistente-404.txt` | `GET /api/v1/no-existe` | `404` **JSON**, no HTML (middleware `notFound`) |
+| 11 | `11-health.txt` | `GET /health` | `200` |
+| 12 | `12-logs-consola.txt` | Salida de consola durante todas las peticiones | `info` de arranque, `http` de Morgan, `warn` de cada error |
+| 13 | `13-build.txt` | `pnpm build` | Sin errores de TypeScript |
 
-```
-GET /api/v1/inventory-items?page=1&limit=2
-```
-Debe responder `200` con `{ "data": [...], "total": 5, "page": 1, "limit": 2 }`.
+> Los `.txt` son el log literal de la terminal. La rúbrica acepta
+> "screenshots **o logs**"; si prefieres imágenes, repite cada petición en
+> Postman/Thunder Client y guarda el PNG con el mismo nombre.
 
-## 2. `02-get-by-id.png` — obtener un ítem existente
+## Orden de ejecución
 
-```
-GET /api/v1/inventory-items/1
-```
-Debe responder `200` con `{ "data": { "id": 1, ... } }`.
+Las capturas 03 → 09 son una secuencia: el `POST` crea el ítem `id: 6`, el `PUT`
+lo modifica y el `DELETE` lo elimina. Si repites las peticiones sueltas sobre un
+servidor recién levantado, los ids no coincidirán (el store es en memoria y se
+reinicia con el proceso).
 
-## 3. `03-get-404.png` — ítem inexistente
-
-```
-GET /api/v1/inventory-items/999
-```
-Debe responder `404` con `{ "error": "Not Found", "message": "Item 999 not found" }`.
-
-## 4. `04-post-crear.png` — crear un ítem
-
-```
-POST /api/v1/inventory-items
-Content-Type: application/json
-
-{
-  "name": "Montacargas eléctrico",
-  "category": "electronics",
-  "price": 15000,
-  "stock": 2,
-  "location": "F-01",
-  "active": true
-}
-```
-Debe responder `201` con `{ "data": { "id": 6, ... } }`.
-
-## 5. `05-put-actualizar.png` — actualizar un ítem
-
-```
-PUT /api/v1/inventory-items/6
-Content-Type: application/json
-
-{ "stock": 1 }
-```
-Debe responder `200` con el ítem actualizado.
-
-## 6. `06-delete.png` — eliminar un ítem
-
-```
-DELETE /api/v1/inventory-items/6
-```
-Debe responder `204` sin body. Repetir la misma petición debe responder `404`.
-
-## 7. `07-build.png` — compilación sin errores
+## Reproducir las capturas
 
 ```bash
-pnpm build
+pnpm install
+pnpm build            # 13
+pnpm dev              # deja el servidor corriendo en otra terminal → 12
+
+curl -i "http://localhost:3000/api/v1/inventory-items?page=1&limit=2"    # 01
+curl -i http://localhost:3000/api/v1/inventory-items/1                   # 02
+
+curl -i -X POST http://localhost:3000/api/v1/inventory-items \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Montacargas electrico","category":"electronics","price":15000,"stock":2,"location":"F-01"}'   # 03
+
+curl -i -X POST http://localhost:3000/api/v1/inventory-items \
+  -H "Content-Type: application/json" \
+  -d '{"name":"AB","category":"herramientas","price":-5,"stock":1.5,"location":"pasillo 3"}'                 # 04
+
+curl -i http://localhost:3000/api/v1/inventory-items/abc                 # 05
+curl -i http://localhost:3000/api/v1/inventory-items/999                 # 06
+
+curl -i -X PUT http://localhost:3000/api/v1/inventory-items/6 \
+  -H "Content-Type: application/json" -d '{"stock":1,"location":"F-02"}'                                     # 07
+
+curl -i -X POST http://localhost:3000/api/v1/inventory-items \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Casco de seguridad","category":"safety-equipment","price":15.5,"stock":10,"location":"D-02"}' # 08
+
+curl -i -X DELETE http://localhost:3000/api/v1/inventory-items/6         # 09
+curl -i http://localhost:3000/api/v1/no-existe                           # 10
+curl -i http://localhost:3000/health                                     # 11
 ```
-Sin salida = éxito (`tsc` sin `--noEmit`, genera `dist/`).
 
-## Cómo tomar la captura (Windows)
-
-1. Con Postman, Thunder Client o `curl` apuntando a `http://localhost:3000`, ejecuta cada petición.
-2. Captura la ventana con **`Win + Shift + S`** → pega en Paint (`Ctrl+V`) → guarda como PNG en esta carpeta con el nombre indicado arriba.
-3. Alternativa sin imágenes: guarda la salida de cada `curl -i ...` en un `.txt` con el mismo nombre — la rúbrica acepta "screenshots **o logs**".
+> **En PowerShell**, `curl` es un alias de `Invoke-WebRequest` y además rompe las
+> comillas del JSON. Usa `curl.exe` y pasa el body desde un archivo:
+> `curl.exe -i -X POST ... --data-binary "@body.json"`.

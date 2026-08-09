@@ -1,0 +1,8 @@
+$ pnpm build
+
+
+> bc-expressjs-semana04-logistica@1.0.0 build C:\Users\USER\Documents\trabajos sena\Bootcamp_Express_Erick\bc-expressjs-entrega
+> tsc
+
+
+(sin errores de TypeScript - tsc genera dist/ y no imprime nada mas)

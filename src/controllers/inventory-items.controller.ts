@@ -1,17 +1,24 @@
 // ============================================
 // CONTROLLER — Interfaz HTTP
 // ============================================
-// Exactamente 3 pasos por función: extraer → llamar service → responder.
-// Sin lógica de negocio. Maneja el 404 cuando el service retorna undefined.
+// Exactamente 3 pasos por función: validar/extraer → llamar service → responder.
+// Sin lógica de negocio y sin decidir status de error: cuando la validación
+// falla se pasa el ZodError a next(err) y el errorHandler global responde el
+// 400 con los issues. Igual con los AppError que lanza el service.
 
 import { Request, Response, NextFunction } from 'express';
 import * as service from '../services/inventory-items.service';
-import { CreateInventoryItemDto, UpdateInventoryItemDto, ErrorResponse } from '../types';
+import {
+  createInventoryItemSchema,
+  updateInventoryItemSchema,
+  idParamSchema,
+} from '../schemas/inventory-item.schema';
+import { SingleResponse } from '../types';
 
 export async function getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const page = Number(req.query['page']) || 1;
+    const limit = Number(req.query['limit']) || 10;
     const result = await service.findAll({ page, limit });
     res.json(result);
   } catch (err) {
@@ -21,14 +28,15 @@ export async function getAll(req: Request, res: Response, next: NextFunction): P
 
 export async function getById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const id = Number(req.params.id);
-    const item = await service.findById(id);
-    if (!item) {
-      const response: ErrorResponse = { error: 'Not Found', message: `Item ${req.params.id} not found` };
-      res.status(404).json(response);
+    const parsedId = idParamSchema.safeParse(req.params['id']);
+    if (!parsedId.success) {
+      next(parsedId.error);
       return;
     }
-    res.json({ data: item });
+
+    const item = await service.findById(parsedId.data);
+    const response: SingleResponse<typeof item> = { data: item };
+    res.json(response);
   } catch (err) {
     next(err);
   }
@@ -36,9 +44,15 @@ export async function getById(req: Request, res: Response, next: NextFunction): 
 
 export async function create(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const dto = req.body as CreateInventoryItemDto;
-    const item = await service.create(dto);
-    res.status(201).json({ data: item });
+    const parsedBody = createInventoryItemSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      next(parsedBody.error);
+      return;
+    }
+
+    const item = await service.create(parsedBody.data);
+    const response: SingleResponse<typeof item> = { data: item };
+    res.status(201).json(response);
   } catch (err) {
     next(err);
   }
@@ -46,15 +60,21 @@ export async function create(req: Request, res: Response, next: NextFunction): P
 
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const id = Number(req.params.id);
-    const dto = req.body as UpdateInventoryItemDto;
-    const item = await service.update(id, dto);
-    if (!item) {
-      const response: ErrorResponse = { error: 'Not Found', message: `Item ${req.params.id} not found` };
-      res.status(404).json(response);
+    const parsedId = idParamSchema.safeParse(req.params['id']);
+    if (!parsedId.success) {
+      next(parsedId.error);
       return;
     }
-    res.json({ data: item });
+
+    const parsedBody = updateInventoryItemSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      next(parsedBody.error);
+      return;
+    }
+
+    const item = await service.update(parsedId.data, parsedBody.data);
+    const response: SingleResponse<typeof item> = { data: item };
+    res.json(response);
   } catch (err) {
     next(err);
   }
@@ -62,13 +82,13 @@ export async function update(req: Request, res: Response, next: NextFunction): P
 
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const id = Number(req.params.id);
-    const removed = await service.remove(id);
-    if (!removed) {
-      const response: ErrorResponse = { error: 'Not Found', message: `Item ${req.params.id} not found` };
-      res.status(404).json(response);
+    const parsedId = idParamSchema.safeParse(req.params['id']);
+    if (!parsedId.success) {
+      next(parsedId.error);
       return;
     }
+
+    await service.remove(parsedId.data);
     res.status(204).send();
   } catch (err) {
     next(err);

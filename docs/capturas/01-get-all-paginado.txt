@@ -4,9 +4,9 @@ HTTP/1.1 200 OK
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
 Content-Length: 373
-ETag: W/"175-PMPvus3pIb4ejFKXl9gcdUf9/Ss"
-Date: Mon, 03 Aug 2026 00:26:30 GMT
+ETag: W/"175-O4msgXrJjVcvjftQUAvblhmfUHw"
+Date: Sun, 09 Aug 2026 23:18:23 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"data":[{"id":1,"name":"Pallet de cartón corrugado","category":"packaging","price":8.5,"stock":500,"location":"A-01","active":true,"createdAt":"2026-08-03T00:26:20.130Z"},{"id":2,"name":"Escáner de código de barras","category":"electronics","price":189.99,"stock":15,"location":"B-05","active":true,"createdAt":"2026-08-03T00:26:20.130Z"}],"total":5,"page":1,"limit":2}
+{"data":[{"id":1,"name":"Pallet de cartón corrugado","category":"packaging","price":8.5,"stock":500,"location":"A-01","active":true,"createdAt":"2026-08-09T23:18:21.082Z"},{"id":2,"name":"Escáner de código de barras","category":"electronics","price":189.99,"stock":15,"location":"B-05","active":true,"createdAt":"2026-08-09T23:18:21.082Z"}],"total":5,"page":1,"limit":2}

@@ -3,10 +3,10 @@ $ curl -i http://localhost:3000/api/v1/inventory-items/999
 HTTP/1.1 404 Not Found
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
-Content-Length: 52
-ETag: W/"34-FVlzSLH/USc/GHXqvJWHOeu0tmc"
-Date: Mon, 03 Aug 2026 00:26:30 GMT
+Content-Length: 78
+ETag: W/"4e-uPg4ZTy775rTDNG9jbc1aawpKYk"
+Date: Sun, 09 Aug 2026 23:18:23 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"error":"Not Found","message":"Item 999 not found"}
+{"error":"Application Error","message":"El ítem de inventario 999 no existe"}

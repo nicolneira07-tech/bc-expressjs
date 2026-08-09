@@ -1,7 +1,7 @@
 {
-  "name": "bc-expressjs-semana03-logistica",
+  "name": "bc-expressjs-semana04-logistica",
   "version": "1.0.0",
-  "description": "Proyecto semanal — API REST de inventario de almacén con arquitectura en 4 capas",
+  "description": "Proyecto semanal — API de inventario de almacén con validación Zod, AppError y logging Winston",
   "main": "dist/server.js",
   "engines": {
     "node": ">=22.0.0"
@@ -13,10 +13,14 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
-    "express": "5.1.0"
+    "express": "5.1.0",
+    "morgan": "1.10.1",
+    "winston": "3.19.0",
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/express": "5.0.1",
+    "@types/morgan": "1.9.10",
     "@types/node": "22.15.3",
     "tsx": "4.19.4",
     "typescript": "5.8.3"

@@ -1,7 +1,10 @@
 // ============================================
 // TYPES — Dominio: Logística / Almacén
 // ============================================
-// Recurso principal: InventoryItem (mismo recurso de las semanas 01 y 02)
+// Recurso principal: InventoryItem (mismo recurso de las semanas 01, 02 y 03).
+// Los DTOs de entrada YA NO viven aquí: desde esta semana se infieren desde los
+// schemas de Zod (`src/schemas/inventory-item.schema.ts`) para tener una única
+// fuente de verdad entre validación en runtime y tipos en compilación.
 
 export interface InventoryItem {
   id: number;
@@ -11,14 +14,8 @@ export interface InventoryItem {
   stock: number;
   location: string;
   active: boolean;
-  createdAt: string;
+  createdAt: Date;
 }
-
-// DTO para crear — sin campos auto-generados
-export type CreateInventoryItemDto = Omit<InventoryItem, 'id' | 'createdAt'>;
-
-// DTO para actualizar — todos los campos opcionales
-export type UpdateInventoryItemDto = Partial<CreateInventoryItemDto>;
 
 // Contratos de respuesta (genéricos, no se adaptan al dominio)
 export interface SingleResponse<T> {
@@ -32,9 +29,18 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+// Respuesta de error de validación (ZodError → 400)
+export interface ValidationErrorResponse {
+  error: string;
+  message: string;
+  issues: Array<{ field: string; message: string }>;
+}
+
+// Respuesta de error genérica (AppError → statusCode, Error → 500)
 export interface ErrorResponse {
   error: string;
   message: string;
+  stack?: string;
 }
 
 export interface PaginationParams {

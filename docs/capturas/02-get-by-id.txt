@@ -4,9 +4,9 @@ HTTP/1.1 200 OK
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
 Content-Length: 172
-ETag: W/"ac-Fgo1wTzXBv+Bsc/jZP6Lx+wnNAI"
-Date: Mon, 03 Aug 2026 00:26:30 GMT
+ETag: W/"ac-sZxxYQgmKQMLNlir/j/PHeTaOgw"
+Date: Sun, 09 Aug 2026 23:18:23 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"data":{"id":1,"name":"Pallet de cartón corrugado","category":"packaging","price":8.5,"stock":500,"location":"A-01","active":true,"createdAt":"2026-08-03T00:26:20.130Z"}}
+{"data":{"id":1,"name":"Pallet de cartón corrugado","category":"packaging","price":8.5,"stock":500,"location":"A-01","active":true,"createdAt":"2026-08-09T23:18:21.082Z"}}

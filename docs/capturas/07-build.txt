@@ -1,6 +1,0 @@
-$ pnpm build
-
-> bc-expressjs-semana03-logistica@1.0.0 build C:\Users\USER\Desarrollo\Bootcamp_Express_Erick\bc-expressjs-entrega
-> tsc
-
-(sin salida de tsc = compilación exitosa)
