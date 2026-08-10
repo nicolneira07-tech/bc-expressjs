@@ -1,0 +1,13 @@
+$ curl -i -X PUT http://localhost:3000/api/v1/inventory-items/999 \
+  -H "Content-Type: application/json" -d '{"stock":1,"location":"F-02"}'
+
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 78
+ETag: W/"4e-uPg4ZTy775rTDNG9jbc1aawpKYk"
+Date: Sun, 09 Aug 2026 23:32:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Application Error","message":"El ítem de inventario 999 no existe"}

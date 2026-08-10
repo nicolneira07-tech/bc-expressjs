@@ -1,21 +1,34 @@
 // ============================================
 // TYPES — Dominio: Logística / Almacén
 // ============================================
-// Recurso principal: InventoryItem (mismo recurso de las semanas 01, 02 y 03).
-// Los DTOs de entrada YA NO viven aquí: desde esta semana se infieren desde los
-// schemas de Zod (`src/schemas/inventory-item.schema.ts`) para tener una única
-// fuente de verdad entre validación en runtime y tipos en compilación.
+// Desde la semana 05 las entidades las genera Prisma a partir de
+// `prisma/schema.prisma` (`InventoryItem`, `Warehouse`), y los DTOs de entrada
+// se infieren de los schemas Zod. Aquí solo quedan los tipos que no vienen de
+// ninguno de los dos: los contratos de respuesta de la API y las vistas que
+// exponemos al cliente.
 
-export interface InventoryItem {
+import { Warehouse } from '@prisma/client';
+
+// Vista de un ítem tal como sale de la API.
+// Se diferencia del modelo de Prisma en `price`: en la base de datos es
+// Decimal(12,2) (tipo Prisma.Decimal) y aquí se convierte a `number` para que
+// el JSON siga siendo el mismo contrato de las semanas 02-04.
+export interface InventoryItemView {
   id: number;
+  sku: string;
   name: string;
   category: string;
   price: number;
   stock: number;
   location: string;
   active: boolean;
+  warehouseId: number;
+  warehouse?: WarehouseView;
   createdAt: Date;
+  updatedAt: Date;
 }
+
+export type WarehouseView = Omit<Warehouse, 'items'>;
 
 // Contratos de respuesta (genéricos, no se adaptan al dominio)
 export interface SingleResponse<T> {

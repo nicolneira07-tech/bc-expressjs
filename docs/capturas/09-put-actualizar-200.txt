@@ -1,0 +1,13 @@
+$ curl -i -X PUT http://localhost:3000/api/v1/inventory-items/7 \
+  -H "Content-Type: application/json" -d '{"stock":1,"location":"F-02"}'
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 427
+ETag: W/"1ab-AF4po3Smo/IuM/+g9kjmLLxOfAI"
+Date: Sun, 09 Aug 2026 23:32:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":{"id":7,"sku":"ELE-0002","name":"Montacargas electrico","category":"electronics","price":15000,"stock":1,"location":"F-02","active":true,"warehouseId":1,"warehouse":{"id":1,"code":"BOG-01","name":"Centro de distribución Bogotá","city":"Bogotá","active":true,"createdAt":"2026-08-09T23:32:11.943Z","updatedAt":"2026-08-09T23:32:11.943Z"},"createdAt":"2026-08-09T23:32:18.529Z","updatedAt":"2026-08-09T23:32:18.844Z"}}

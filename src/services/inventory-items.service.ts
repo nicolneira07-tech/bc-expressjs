@@ -1,26 +1,29 @@
 // ============================================
 // SERVICE — Lógica de negocio
 // ============================================
-// Cero imports de Express: el service no sabe que existe HTTP. Cuando algo
-// sale mal lanza un AppError con su status code y el errorHandler global lo
-// traduce a una respuesta HTTP (cambio respecto a la semana 03, donde el
-// service retornaba undefined y el controller decidía el 404).
+// Cero imports de Express y cero imports de Prisma: el service no sabe ni que
+// existe HTTP ni qué motor de base de datos hay debajo. Solo habla con el
+// repository y lanza AppError cuando una regla de negocio no se cumple.
 
-import { InventoryItem, PaginatedResponse, PaginationParams } from '../types';
-import { CreateInventoryItemDto, UpdateInventoryItemDto } from '../schemas/inventory-item.schema';
+import { InventoryItemView, PaginatedResponse, PaginationParams } from '../types';
+import {
+  CreateInventoryItemDto,
+  UpdateInventoryItemDto,
+} from '../schemas/inventory-item.schema';
 import * as repository from '../repositories/inventory-items.repository';
+import * as warehousesRepository from '../repositories/warehouses.repository';
 import { AppError } from '../errors/AppError';
 
-export async function findAll(params: PaginationParams): Promise<PaginatedResponse<InventoryItem>> {
+export async function findAll(
+  params: PaginationParams
+): Promise<PaginatedResponse<InventoryItemView>> {
   const { page, limit } = params;
-  const all = await repository.findAll();
-  const start = (page - 1) * limit;
-  const data = all.slice(start, start + limit);
+  const { data, total } = await repository.findAll(params);
 
-  return { data, total: all.length, page, limit };
+  return { data, total, page, limit };
 }
 
-export async function findById(id: number): Promise<InventoryItem> {
+export async function findById(id: number): Promise<InventoryItemView> {
   const item = await repository.findById(id);
   if (!item) {
     throw new AppError(404, `El ítem de inventario ${id} no existe`);
@@ -28,36 +31,33 @@ export async function findById(id: number): Promise<InventoryItem> {
   return item;
 }
 
-export async function create(dto: CreateInventoryItemDto): Promise<InventoryItem> {
-  // Regla de negocio del almacén: no puede haber dos ítems con el mismo nombre
-  // en el catálogo (evita duplicar la misma referencia en varias ubicaciones).
-  const duplicated = await repository.findByName(dto.name);
-  if (duplicated) {
-    throw new AppError(409, `Ya existe un ítem de inventario llamado "${dto.name}"`);
-  }
+export async function create(dto: CreateInventoryItemDto): Promise<InventoryItemView> {
+  // Regla de negocio: no se puede dar de alta un ítem en una bodega que no
+  // existe. La FK de PostgreSQL también lo impediría (P2003 → 400), pero
+  // comprobarlo aquí permite dar un mensaje mucho más claro.
+  await assertWarehouseExists(dto.warehouseId);
   return repository.create(dto);
 }
 
-export async function update(id: number, dto: UpdateInventoryItemDto): Promise<InventoryItem> {
-  const exists = await repository.findById(id);
-  if (!exists) {
-    throw new AppError(404, `El ítem de inventario ${id} no existe`);
+export async function update(
+  id: number,
+  dto: UpdateInventoryItemDto
+): Promise<InventoryItemView> {
+  if (dto.warehouseId !== undefined) {
+    await assertWarehouseExists(dto.warehouseId);
   }
-
-  if (dto.name !== undefined) {
-    const duplicated = await repository.findByName(dto.name);
-    if (duplicated && duplicated.id !== id) {
-      throw new AppError(409, `Ya existe un ítem de inventario llamado "${dto.name}"`);
-    }
-  }
-
-  const updated = await repository.update(id, dto);
-  return updated!;
+  // No hace falta comprobar que el ítem existe: Prisma lanza P2025 y el
+  // repository lo traduce a AppError(404).
+  return repository.update(id, dto);
 }
 
 export async function remove(id: number): Promise<void> {
-  const deleted = await repository.remove(id);
-  if (!deleted) {
-    throw new AppError(404, `El ítem de inventario ${id} no existe`);
+  await repository.remove(id);
+}
+
+async function assertWarehouseExists(warehouseId: number): Promise<void> {
+  const warehouse = await warehousesRepository.findById(warehouseId);
+  if (!warehouse) {
+    throw new AppError(404, `La bodega ${warehouseId} no existe`);
   }
 }

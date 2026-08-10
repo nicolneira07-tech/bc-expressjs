@@ -3,10 +3,10 @@ $ curl -i http://localhost:3000/health
 HTTP/1.1 200 OK
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
-Content-Length: 70
-ETag: W/"46-HuFRV6gXKnP1nK038rOqcKS/iGY"
-Date: Sun, 09 Aug 2026 23:18:24 GMT
+Content-Length: 69
+ETag: W/"45-n5UuL+yehGWt8KH5oAc6URxCIP8"
+Date: Sun, 09 Aug 2026 23:32:19 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"status":"ok","week":"04","project":"api-validacion-errores-almacen"}
+{"status":"ok","week":"05","project":"api-postgresql-prisma-almacen"}

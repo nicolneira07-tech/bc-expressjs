@@ -1,14 +1,14 @@
 $ curl -i -X POST http://localhost:3000/api/v1/inventory-items \
   -H "Content-Type: application/json" \
-  -d '{"name":"AB","category":"herramientas","price":-5,"stock":1.5,"location":"pasillo 3"}'
+  -d '{"sku":"xx","name":"AB","category":"herramientas","price":-5,"stock":1.5,"location":"pasillo 3","warehouseId":0}'
 
 HTTP/1.1 400 Bad Request
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
-Content-Length: 491
-ETag: W/"1eb-T4NlyHUQnqkzSGl0HyqliWzxMEI"
-Date: Sun, 09 Aug 2026 23:18:23 GMT
+Content-Length: 654
+ETag: W/"28e-cFldZYUEoNgwxiBOXs4ElpMwl9k"
+Date: Sun, 09 Aug 2026 23:32:18 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"error":"Validation Error","message":"Los datos enviados no son válidos","issues":[{"field":"name","message":"name debe tener al menos 3 caracteres"},{"field":"category","message":"category debe ser una de: packaging, electronics, spare-parts, safety-equipment, raw-materials"},{"field":"price","message":"price debe ser mayor a 0"},{"field":"stock","message":"stock debe ser un número entero"},{"field":"location","message":"location debe seguir el formato PASILLO-ESTANTE (ej. A-01)"}]}
+{"error":"Validation Error","message":"Los datos enviados no son válidos","issues":[{"field":"sku","message":"sku debe seguir el formato AAA-0000 (ej. PKG-0001)"},{"field":"name","message":"name debe tener al menos 3 caracteres"},{"field":"category","message":"category debe ser una de: packaging, electronics, spare-parts, safety-equipment, raw-materials"},{"field":"price","message":"price debe ser mayor a 0"},{"field":"stock","message":"stock debe ser un número entero"},{"field":"location","message":"location debe seguir el formato PASILLO-ESTANTE (ej. A-01)"},{"field":"warehouseId","message":"warehouseId debe ser un número entero positivo"}]}

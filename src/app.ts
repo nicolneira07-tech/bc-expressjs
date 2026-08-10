@@ -10,6 +10,7 @@
 import express from 'express';
 import { morganMiddleware } from './config/logger';
 import { inventoryItemsRouter } from './routes/inventory-items.routes';
+import { warehousesRouter } from './routes/warehouses.routes';
 import { notFound } from './middlewares/notFound';
 import { errorHandler } from './middlewares/errorHandler';
 
@@ -21,10 +22,11 @@ app.use(morganMiddleware);
 
 // Health check
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', week: '04', project: 'api-validacion-errores-almacen' });
+  res.json({ status: 'ok', week: '05', project: 'api-postgresql-prisma-almacen' });
 });
 
 // 2. Rutas del dominio
+app.use('/api/v1/warehouses', warehousesRouter);
 app.use('/api/v1/inventory-items', inventoryItemsRouter);
 
 // 3. Ruta no registrada → AppError(404) → errorHandler

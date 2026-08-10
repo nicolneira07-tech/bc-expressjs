@@ -1,0 +1,18 @@
+$ pnpm build
+
+
+> bc-expressjs-semana05-logistica@1.0.0 build C:\Users\USER\Documents\trabajos sena\Bootcamp_Express_Erick\bc-expressjs-entrega
+> tsc
+
+
+(sin errores de TypeScript)
+
+$ pnpm exec prisma migrate status
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "bootcamp_dev", schema "public" at "localhost:5432"
+
+1 migration found in prisma/migrations
+
+Database schema is up to date!

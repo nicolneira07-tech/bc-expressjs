@@ -11,153 +11,202 @@ Cada semana se entrega en su propia rama `week-<NN>`.
 | 01 | [`week-01`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-01) | Node.js Fundamentals |
 | 02 | [`week-02`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-02) | Express Intro |
 | 03 | [`week-03`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-03) | REST API Arquitectura en Capas |
-| 04 | `week-04` | Validación, Errores y Logging |
+| 04 | [`week-04`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-04) | Validación, Errores y Logging |
+| 05 | `week-05` | PostgreSQL + Prisma ORM |
 
 ---
 
-## Semana 04 — Validación con Zod, errores estructurados y logging
+## Semana 05 — API de inventario con PostgreSQL y Prisma ORM
 
-Misma API de inventario de almacén de la semana 03 (mismo dominio, mismo
-recurso, misma arquitectura en 4 capas), ahora con:
+La API de la semana 04 migrada del array en memoria a **PostgreSQL** con
+**Prisma ORM**: migraciones versionadas, seed idempotente, relación 1:N y
+traducción de los errores de Prisma a respuestas HTTP correctas.
 
-- **Validación de entrada con Zod** — schemas de creación y actualización, tipos
-  inferidos con `z.infer<>`, validación del parámetro `:id`.
-- **Errores estructurados** — clase `AppError`, middleware `notFound` y un
-  `errorHandler` global de 4 parámetros que distingue `ZodError` (400),
-  `AppError` (su propio status) y errores no controlados (500).
-- **Logging profesional** — Winston (`info`/`http`/`warn`/`error`) + Morgan
-  redirigido a Winston. Ya no queda ningún `console.log` en el proyecto.
+Todo lo de la semana 04 sigue en pie (validación Zod, `AppError`, `errorHandler`
+de 4 parámetros, Winston + Morgan). Lo que cambió es **solo la capa de
+repositorio** — el controller y las rutas no se tocaron. Esa es exactamente la
+ventaja que compra la arquitectura en capas.
 
-### Recurso: `InventoryItem`
+### Modelo de datos
 
-| Campo | Tipo | Validación (Zod) |
+```
+┌─────────────────────┐              ┌──────────────────────────┐
+│ Warehouse (bodega)  │ 1          N │ InventoryItem (ítem)     │
+├─────────────────────┤──────────────├──────────────────────────┤
+│ id        Int  PK   │              │ id          Int  PK      │
+│ code      String UQ │◄─────────────│ warehouseId Int  FK      │
+│ name      String    │              │ sku         String UQ    │
+│ city      String    │              │ name        String       │
+│ active    Boolean   │              │ category    String       │
+│ createdAt DateTime  │              │ price       Decimal(12,2)│
+│ updatedAt DateTime  │              │ stock       Int          │
+└─────────────────────┘              │ location    String       │
+                                     │ active      Boolean      │
+     tabla: warehouses               │ createdAt   DateTime     │
+                                     │ updatedAt   DateTime     │
+                                     └──────────────────────────┘
+                                       tabla: inventory_items
+```
+
+Una **bodega** (centro de distribución de la empresa de logística) almacena
+muchos **ítems de inventario**. Cada ítem pertenece a exactamente una bodega, y
+su `location` (`A-01`) es la posición del estante dentro de esa bodega.
+
+Los dos campos `@unique` (`warehouses.code` e `inventory_items.sku`) son los que
+disparan el error `P2002` de Prisma cuando se intenta duplicar un valor.
+
+### Campos y validaciones
+
+**`InventoryItem`** (recurso principal)
+
+| Campo | Tipo Prisma | Validación de entrada (Zod) |
 |---|---|---|
-| `id` | `number` | Autogenerado. En la URL: `z.coerce.number().int().positive()` |
-| `name` | `string` | Obligatorio, `trim()`, entre 3 y 100 caracteres |
-| `category` | `enum` | Una de: `packaging`, `electronics`, `spare-parts`, `safety-equipment`, `raw-materials` |
-| `price` | `number` | Obligatorio, `.positive()` (mayor a 0) |
-| `stock` | `number` | Entero, `.nonnegative()`, `.default(0)` |
-| `location` | `string` | Obligatorio, formato `PASILLO-ESTANTE` — regex `^[A-Z]-\d{2}$` (ej. `A-01`) |
-| `active` | `boolean` | `.default(true)` |
-| `createdAt` | `Date` | Autogenerado por el repository |
+| `id` | `Int @id @default(autoincrement())` | En la URL: `z.coerce.number().int().positive()` |
+| `sku` | `String @unique` | Formato `AAA-0000` (ej. `PKG-0001`) |
+| `name` | `String` | `trim()`, entre 3 y 100 caracteres |
+| `category` | `String` | `z.enum` con las 5 categorías del almacén |
+| `price` | `Decimal @db.Decimal(12,2)` | `.positive()` |
+| `stock` | `Int @default(0)` | Entero, `.nonnegative()`, `.default(0)` |
+| `location` | `String` | Regex `^[A-Z]-\d{2}$` (ej. `A-01`) |
+| `active` | `Boolean @default(true)` | `.default(true)` |
+| `warehouseId` | `Int` (FK) | Entero positivo; el service verifica que la bodega exista |
+| `createdAt` / `updatedAt` | `DateTime` | Los gestiona Prisma |
 
-El schema de actualización es `createInventoryItemSchema.partial()` — reutiliza
-las mismas reglas sin duplicarlas.
+**`Warehouse`** (recurso secundario)
 
-### Arquitectura
-
-| Capa | Archivo | Responsabilidad |
+| Campo | Tipo Prisma | Validación de entrada (Zod) |
 |---|---|---|
-| Routes | `src/routes/inventory-items.routes.ts` | Mapea URL + método → función del controller |
-| Controllers | `src/controllers/inventory-items.controller.ts` | Valida con `safeParse`, llama al service, responde. Sin lógica de negocio |
-| Services | `src/services/inventory-items.service.ts` | Paginación y reglas de negocio. Lanza `AppError`. Cero imports de Express |
-| Repositories | `src/repositories/inventory-items.repository.ts` | Único acceso al store en memoria, siempre `async`, copias defensivas |
-| Schemas | `src/schemas/inventory-item.schema.ts` | Schemas Zod + tipos inferidos (única fuente de verdad) |
-| Errors | `src/errors/AppError.ts` | Errores operacionales con `statusCode` e `isOperational` |
-| Middlewares | `src/middlewares/notFound.ts`, `errorHandler.ts` | 404 de ruta y manejo global de errores (4 parámetros) |
-| Config | `src/config/logger.ts` | Winston + stream de Morgan |
+| `code` | `String @unique` | Formato `AAA-00` (ej. `BOG-01`) |
+| `name` | `String` | Entre 3 y 100 caracteres |
+| `city` | `String` | Mínimo 3 caracteres |
+| `active` | `Boolean @default(true)` | `.default(true)` |
 
-### Endpoints y contratos
+### Endpoints
+
+**Ítems de inventario** — `/api/v1/inventory-items`
 
 | Método | Ruta | Descripción | Status |
 |---|---|---|---|
-| GET | `/api/v1/inventory-items?page&limit` | Listar paginado | 200 |
-| GET | `/api/v1/inventory-items/:id` | Obtener por ID | 200 / 400 / 404 |
-| POST | `/api/v1/inventory-items` | Crear (validado con Zod) | 201 / 400 / 409 |
-| PUT | `/api/v1/inventory-items/:id` | Actualizar parcialmente | 200 / 400 / 404 / 409 |
-| DELETE | `/api/v1/inventory-items/:id` | Eliminar | 204 / 400 / 404 |
-| GET | `/health` | Health check | 200 |
+| GET | `/?page&limit` | Listado paginado, con la bodega incluida | 200 / 400 |
+| GET | `/:id` | Detalle con la bodega incluida | 200 / 400 / 404 |
+| POST | `/` | Crear | 201 / 400 / 404 / 409 |
+| PUT | `/:id` | Actualizar parcialmente | 200 / 400 / 404 / 409 |
+| DELETE | `/:id` | Eliminar | 204 / 400 / 404 |
+
+**Bodegas** — `/api/v1/warehouses`
+
+| Método | Ruta | Descripción | Status |
+|---|---|---|---|
+| GET | `/` | Listar todas | 200 |
+| GET | `/:id` | Obtener por id | 200 / 400 / 404 |
+| POST | `/` | Crear | 201 / 400 / 409 |
+| PUT | `/:id` | Actualizar | 200 / 400 / 404 / 409 |
+| DELETE | `/:id` | Eliminar | 204 / 400 / 404 / 409 |
+
+Más `GET /health` → 200.
 
 ```jsonc
-// GET /inventory-items?page=1&limit=2 → 200
-{ "data": [ /* ... */ ], "total": 5, "page": 1, "limit": 2 }
-
-// GET /inventory-items/1 → 200
-{ "data": { "id": 1, "name": "Pallet de cartón corrugado", /* ... */ } }
-
-// POST con body inválido → 400
+// GET /api/v1/inventory-items?page=1&limit=2 → 200
 {
-  "error": "Validation Error",
-  "message": "Los datos enviados no son válidos",
-  "issues": [
-    { "field": "name",     "message": "name debe tener al menos 3 caracteres" },
-    { "field": "price",    "message": "price debe ser mayor a 0" },
-    { "field": "location", "message": "location debe seguir el formato PASILLO-ESTANTE (ej. A-01)" }
-  ]
+  "data": [
+    {
+      "id": 1,
+      "sku": "PKG-0001",
+      "name": "Pallet de cartón corrugado",
+      "category": "packaging",
+      "price": 8.5,
+      "stock": 500,
+      "location": "A-01",
+      "active": true,
+      "warehouseId": 1,
+      "warehouse": {
+        "id": 1,
+        "code": "BOG-01",
+        "name": "Centro de distribución Bogotá",
+        "city": "Bogotá",
+        "active": true,
+        "createdAt": "2026-08-09T23:32:11.943Z",
+        "updatedAt": "2026-08-09T23:32:11.943Z"
+      },
+      "createdAt": "2026-08-09T23:32:11.953Z",
+      "updatedAt": "2026-08-09T23:32:11.953Z"
+    }
+    // ...
+  ],
+  "total": 6,
+  "page": 1,
+  "limit": 2
 }
 
-// GET /inventory-items/999 → 404
+// POST con un sku que ya existe → 409 (P2002)
+{ "error": "Application Error", "message": "Ya existe un ítem de inventario con el sku \"PKG-0001\"" }
+
+// PUT /api/v1/inventory-items/999 → 404 (P2025)
 { "error": "Application Error", "message": "El ítem de inventario 999 no existe" }
 
-// POST con un name que ya existe → 409
-{ "error": "Application Error", "message": "Ya existe un ítem de inventario llamado \"Casco de seguridad\"" }
-
-// GET /api/v1/no-existe → 404 (JSON, no HTML)
-{ "error": "Application Error", "message": "Ruta GET /api/v1/no-existe no encontrada" }
+// POST con warehouseId: 999 → 404 (regla de negocio del service)
+{ "error": "Application Error", "message": "La bodega 999 no existe" }
 ```
 
-### Manejo de errores
+### Errores de Prisma traducidos
 
-| Tipo de error | Origen | Status | Log |
-|---|---|---|---|
-| `ZodError` | `safeParse` del body o del `:id` | 400 | `logger.warn` |
-| `AppError` | Lanzado por el service o por `notFound` | `err.statusCode` (404, 409) | `logger.warn` |
-| `Error` genérico | Bug no controlado | 500 | `logger.error` + stack |
+El repository es el único lugar que conoce los códigos de Prisma; los convierte
+a `AppError` y a partir de ahí todo sigue el camino normal hacia el
+`errorHandler`.
 
-El `stack` solo se incluye en la respuesta cuando `NODE_ENV !== 'production'`.
-
-### Logging
-
-- `logger.info` — arranque del servidor (`server.ts`).
-- `logger.http` — cada petición HTTP, vía Morgan → `morganStream`.
-- `logger.warn` — errores operacionales (validación, 404, 409).
-- `logger.error` — errores no controlados (500), con stack.
-
-Nivel `http` en desarrollo y `warn` en producción. Formato coloreado en
-desarrollo, JSON en producción, más un transport de archivo `logs/error.log`
-que solo se activa en producción.
+| Código Prisma | Significado | Respuesta |
+|---|---|---|
+| `P2002` | Violación de restricción `@unique` | `409` — "Ya existe un ítem con el sku ..." |
+| `P2003` | Clave foránea inválida | `400` — "La bodega indicada en warehouseId no existe" |
+| `P2025` | El registro a actualizar/eliminar no existe | `404` — "El ítem de inventario N no existe" |
 
 ### Cómo correr el proyecto
 
 ```bash
-pnpm install
-cp .env.example .env
-pnpm dev                              # levanta con recarga en localhost:3000
-pnpm build                            # verifica que compila sin errores TypeScript
-pnpm start                            # corre el build compilado (dist/server.js)
+docker compose up -d                  # 1. PostgreSQL 16 en localhost:5432
+pnpm install                          # 2. dependencias (+ prisma generate)
+cp .env.example .env                  # 3. variables de entorno
+pnpm db:migrate                       # 4. aplica prisma/migrations/
+pnpm db:seed                          # 5. 2 bodegas + 6 ítems
+pnpm dev                              # 6. servidor en localhost:3000
 ```
+
+Otros scripts: `pnpm build` (compila a `dist/`), `pnpm start` (corre el build),
+`pnpm db:studio` (explorador visual de la base en el navegador).
 
 Variables de entorno (`.env.example`):
 
 | Variable | Valor por defecto | Uso |
 |---|---|---|
+| `DATABASE_URL` | `postgresql://bootcamp:bootcamp123@localhost:5432/bootcamp_dev` | Conexión a PostgreSQL |
 | `PORT` | `3000` | Puerto del servidor |
-| `NODE_ENV` | `development` | Controla nivel y formato de logs, y si se expone el `stack` |
+| `NODE_ENV` | `development` | Nivel/formato de logs, log de queries de Prisma, exposición del `stack` |
+
+> Las credenciales de `docker-compose.yml` son de desarrollo local y coinciden
+> con el starter del bootcamp. El `.env` real está en `.gitignore`.
 
 ### Probar con curl
 
 ```bash
 curl -i "http://localhost:3000/api/v1/inventory-items?page=1&limit=2"
 curl -i http://localhost:3000/api/v1/inventory-items/1
+curl -i http://localhost:3000/api/v1/warehouses
 
 # Crear (201)
 curl -i -X POST http://localhost:3000/api/v1/inventory-items \
   -H "Content-Type: application/json" \
-  -d '{"name":"Montacargas electrico","category":"electronics","price":15000,"stock":2,"location":"F-01"}'
+  -d '{"sku":"ELE-0002","name":"Montacargas electrico","category":"electronics","price":15000,"stock":2,"location":"F-01","warehouseId":1}'
 
-# Body inválido (400 con issues[])
+# sku duplicado → 409 (P2002)
 curl -i -X POST http://localhost:3000/api/v1/inventory-items \
   -H "Content-Type: application/json" \
-  -d '{"name":"AB","category":"herramientas","price":-5,"stock":1.5,"location":"pasillo 3"}'
+  -d '{"sku":"PKG-0001","name":"Pallet duplicado","category":"packaging","price":9,"stock":10,"location":"A-02","warehouseId":1}'
 
-curl -i http://localhost:3000/api/v1/inventory-items/abc     # 400 (id no numérico)
-curl -i http://localhost:3000/api/v1/inventory-items/999     # 404
-curl -i http://localhost:3000/api/v1/no-existe               # 404 JSON
-
-curl -i -X PUT http://localhost:3000/api/v1/inventory-items/6 \
-  -H "Content-Type: application/json" -d '{"stock":1,"location":"F-02"}'
-
-curl -i -X DELETE http://localhost:3000/api/v1/inventory-items/6   # 204 sin body
+# actualizar / eliminar un id inexistente → 404 (P2025)
+curl -i -X PUT http://localhost:3000/api/v1/inventory-items/999 \
+  -H "Content-Type: application/json" -d '{"stock":1}'
+curl -i -X DELETE http://localhost:3000/api/v1/inventory-items/999
 ```
 
-Salida completa de cada petición y de los logs: [`docs/capturas/`](docs/capturas/).
+Salida completa de cada petición, del seed y de los logs:
+[`docs/capturas/`](docs/capturas/).
