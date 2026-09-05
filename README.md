@@ -8,10 +8,10 @@ Cada semana se entrega en su propia rama `week-<NN>`.
 
 | Semana | Rama | Tema |
 |---|---|---|
-| 01 | [`week-01`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-01) | Node.js Fundamentals |
-| 02 | [`week-02`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-02) | Express Intro |
-| 03 | [`week-03`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-03) | REST API Arquitectura en Capas |
-| 04 | [`week-04`](https://github.com/nicolneira07-tech/bc-expressjs-entrega/tree/week-04) | Validación, Errores y Logging |
+| 01 | [`week-01`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-01) | Node.js Fundamentals |
+| 02 | [`week-02`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-02) | Express Intro |
+| 03 | [`week-03`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-03) | REST API Arquitectura en Capas |
+| 04 | [`week-04`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-04) | Validación, Errores y Logging |
 | 05 | `week-05` | PostgreSQL + Prisma ORM |
 
 ---
