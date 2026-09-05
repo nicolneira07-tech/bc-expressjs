@@ -1,16 +1,16 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: bootcamp-db
+  mongo:
+    image: mongo:7
+    container_name: bootcamp-mongo
     environment:
-      POSTGRES_USER: bootcamp
-      POSTGRES_PASSWORD: bootcamp123
-      POSTGRES_DB: bootcamp_dev
+      MONGO_INITDB_ROOT_USERNAME: bootcamp
+      MONGO_INITDB_ROOT_PASSWORD: bootcamp123
+      MONGO_INITDB_DATABASE: bootcamp_dev
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  mongo_data:

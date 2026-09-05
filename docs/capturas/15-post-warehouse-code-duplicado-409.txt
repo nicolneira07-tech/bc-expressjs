@@ -1,0 +1,12 @@
+$ curl -i -X POST http://localhost:3000/api/v1/warehouses -H 'Content-Type: application/json' -d '{"code":"BOG-01","name":"Otra bodega","city":"Bogota"}'
+
+HTTP/1.1 409 Conflict
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 88
+ETag: W/"58-GtNNEKMFit+uomN1kFCZ2bURriQ"
+Date: Sat, 05 Sep 2026 22:03:57 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Application Error","message":"Ya existe una bodega con el código \"BOG-01\""}

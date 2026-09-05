@@ -1,11 +1,11 @@
 // ============================================
 // SCHEMAS — Validación con Zod del recurso Warehouse (bodega)
 // ============================================
+// Sin cambios respecto a la semana 05: el formato de negocio de `code` no
+// depende del motor de base de datos.
 
 import { z } from 'zod';
 
-// Código de bodega: 3 letras de la ciudad, guion, 2 dígitos (ej. BOG-01).
-// Es @unique en la base de datos → un duplicado dispara el P2002 de Prisma.
 const WAREHOUSE_CODE_REGEX = /^[A-Z]{3}-\d{2}$/;
 
 export const createWarehouseSchema = z.object({

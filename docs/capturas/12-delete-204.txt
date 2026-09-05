@@ -1,0 +1,9 @@
+$ curl -i -X DELETE http://localhost:3000/api/v1/inventory-items/6a9c924f57e1812d5ab961eb
+
+HTTP/1.1 204 No Content
+X-Powered-By: Express
+Date: Sat, 05 Sep 2026 22:06:07 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+

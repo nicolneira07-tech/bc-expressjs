@@ -22,7 +22,7 @@ app.use(morganMiddleware);
 
 // Health check
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', week: '05', project: 'api-postgresql-prisma-almacen' });
+  res.json({ status: 'ok', week: '06', project: 'api-mongodb-mongoose-almacen' });
 });
 
 // 2. Rutas del dominio

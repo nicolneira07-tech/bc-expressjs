@@ -1,0 +1,12 @@
+$ curl -i -X POST http://localhost:3000/api/v1/inventory-items -H 'Content-Type: application/json' -d '{"sku":"PKG-0009","name":"Caja plastica apilable","category":"packaging","price":19.9,"stock":40,"location":"A-09","warehouse":"no-es-un-objectid"}'
+
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 185
+ETag: W/"b9-c+DQPeFndI1DYd885y1NRJLzBYs"
+Date: Sat, 05 Sep 2026 22:03:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Validation Error","message":"Los datos enviados no son válidos","issues":[{"field":"warehouse","message":"El id debe ser un ObjectId válido (24 caracteres hexadecimales)"}]}

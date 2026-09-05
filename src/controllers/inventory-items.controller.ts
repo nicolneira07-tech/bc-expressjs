@@ -10,7 +10,7 @@ import * as service from '../services/inventory-items.service';
 import {
   createInventoryItemSchema,
   updateInventoryItemSchema,
-  idParamSchema,
+  objectIdSchema,
   paginationSchema,
 } from '../schemas/inventory-item.schema';
 import { SingleResponse } from '../types';
@@ -32,7 +32,7 @@ export async function getAll(req: Request, res: Response, next: NextFunction): P
 
 export async function getById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const parsedId = idParamSchema.safeParse(req.params['id']);
+    const parsedId = objectIdSchema.safeParse(req.params['id']);
     if (!parsedId.success) {
       next(parsedId.error);
       return;
@@ -64,7 +64,7 @@ export async function create(req: Request, res: Response, next: NextFunction): P
 
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const parsedId = idParamSchema.safeParse(req.params['id']);
+    const parsedId = objectIdSchema.safeParse(req.params['id']);
     if (!parsedId.success) {
       next(parsedId.error);
       return;
@@ -86,7 +86,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
 
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const parsedId = idParamSchema.safeParse(req.params['id']);
+    const parsedId = objectIdSchema.safeParse(req.params['id']);
     if (!parsedId.success) {
       next(parsedId.error);
       return;

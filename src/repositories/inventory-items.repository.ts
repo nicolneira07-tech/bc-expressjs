@@ -1,134 +1,156 @@
 // ============================================
-// REPOSITORY — Capa de acceso a datos (PostgreSQL vía Prisma)
+// REPOSITORY — Capa de acceso a datos (MongoDB vía Mongoose)
 // ============================================
-// Único punto del proyecto que habla con la base de datos. La interfaz pública
-// (findAll, findById, create, update, remove) es la MISMA de la semana 04:
-// cambiar el array en memoria por PostgreSQL no obligó a tocar el controller
-// ni las rutas. Eso es lo que compra la arquitectura en capas.
+// La interfaz pública (findAll, findById, create, update, remove) es la
+// MISMA de la semana 05: cambiar Prisma/PostgreSQL por Mongoose/MongoDB no
+// obligó a tocar el controller ni las rutas.
 //
-// Aquí también se traducen los códigos de error de Prisma a AppError:
-//   P2002 → 409 (violación de restricción @unique)
-//   P2003 → 400 (clave foránea inválida: la bodega no existe)
-//   P2025 → 404 (el registro a actualizar/eliminar no existe)
+// Aquí se traducen los errores propios de Mongo a AppError:
+//   11000 (índice único duplicado, el sku)  → 409
+//   CastError (id con formato inválido)     → 400
+//   documento no encontrado (null)          → 404
 
-import { Prisma, InventoryItem } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import mongoose from 'mongoose';
+import { InventoryItem, IInventoryItem } from '../models/inventory-item.model';
+import { IWarehouse } from '../models/warehouse.model';
 import { AppError } from '../errors/AppError';
-import { InventoryItemView, PaginationParams } from '../types';
-import {
-  CreateInventoryItemDto,
-  UpdateInventoryItemDto,
-} from '../schemas/inventory-item.schema';
+import { InventoryItemView, PaginationParams, WarehouseView } from '../types';
+import { CreateInventoryItemDto, UpdateInventoryItemDto } from '../schemas/inventory-item.schema';
 
-// El ítem tal como lo trae Prisma cuando se pide con su bodega.
-type InventoryItemWithWarehouse = Prisma.InventoryItemGetPayload<{
-  include: { warehouse: true };
-}>;
+type ObjectId = mongoose.Types.ObjectId;
 
-// price es Decimal(12,2) en PostgreSQL → Prisma.Decimal en JavaScript.
-// Sin esta conversión el JSON saldría como string ("8.5") y rompería el
-// contrato que vienen consumiendo las semanas anteriores.
-function toView(item: InventoryItemWithWarehouse | InventoryItem): InventoryItemView {
+type InventoryItemDoc = Omit<IInventoryItem, 'warehouse'> & {
+  _id: ObjectId;
+  // Sin `.populate()`, `warehouse` es un ObjectId; con `.populate()`, el
+  // documento completo de la bodega.
+  warehouse: ObjectId | (IWarehouse & { _id: ObjectId; createdAt: Date; updatedAt: Date });
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+function toWarehouseView(w: IWarehouse & { _id: ObjectId; createdAt: Date; updatedAt: Date }): WarehouseView {
   return {
-    id: item.id,
-    sku: item.sku,
-    name: item.name,
-    category: item.category,
-    price: Number(item.price),
-    stock: item.stock,
-    location: item.location,
-    active: item.active,
-    warehouseId: item.warehouseId,
-    ...('warehouse' in item ? { warehouse: item.warehouse } : {}),
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
+    id: String(w._id),
+    code: w.code,
+    name: w.name,
+    city: w.city,
+    active: w.active,
+    createdAt: w.createdAt,
+    updatedAt: w.updatedAt,
+  };
+}
+
+function toView(doc: InventoryItemDoc): InventoryItemView {
+  const isPopulated = !(doc.warehouse instanceof mongoose.Types.ObjectId);
+
+  return {
+    id: String(doc._id),
+    sku: doc.sku,
+    name: doc.name,
+    category: doc.category,
+    price: doc.price,
+    stock: doc.stock,
+    location: doc.location,
+    active: doc.active,
+    warehouse: isPopulated
+      ? toWarehouseView(doc.warehouse as IWarehouse & { _id: ObjectId; createdAt: Date; updatedAt: Date })
+      : String(doc.warehouse),
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
   };
 }
 
 export async function findAll(
-  params: PaginationParams
+  params: PaginationParams,
 ): Promise<{ data: InventoryItemView[]; total: number }> {
   const { page, limit } = params;
+  const skip = (page - 1) * limit;
 
-  // Promise.all: las dos consultas son independientes, se lanzan en paralelo
-  // en vez de esperar una y después la otra.
+  // Las dos consultas son independientes → se lanzan en paralelo.
   const [items, total] = await Promise.all([
-    prisma.inventoryItem.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      include: { warehouse: true },
-      // El `id` como segundo criterio hace el orden determinista: el seed crea
-      // los 6 ítems en el mismo instante, así que ordenar solo por createdAt
-      // dejaría el orden dentro de la página a merced de PostgreSQL.
-      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-    }),
-    prisma.inventoryItem.count(),
+    InventoryItem.find()
+      .populate('warehouse')
+      // `_id` como desempate: igual que en la semana 05, el seed inserta
+      // varios ítems en el mismo instante y sin un segundo criterio el orden
+      // dentro de la página no sería determinista.
+      .sort({ createdAt: -1, _id: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean<InventoryItemDoc[]>(),
+    InventoryItem.countDocuments(),
   ]);
 
   return { data: items.map(toView), total };
 }
 
-export async function findById(id: number): Promise<InventoryItemView | null> {
-  const item = await prisma.inventoryItem.findUnique({
-    where: { id },
-    include: { warehouse: true },
-  });
-
-  return item ? toView(item) : null;
+export async function findById(id: string): Promise<InventoryItemView | null> {
+  let doc: InventoryItemDoc | null;
+  try {
+    doc = await InventoryItem.findById(id).populate('warehouse').lean<InventoryItemDoc | null>();
+  } catch (err) {
+    throw translateMongoError(err, undefined, id);
+  }
+  return doc ? toView(doc) : null;
 }
 
 export async function create(dto: CreateInventoryItemDto): Promise<InventoryItemView> {
   try {
-    const item = await prisma.inventoryItem.create({
-      data: dto,
-      include: { warehouse: true },
-    });
-    return toView(item);
+    const doc = await InventoryItem.create(dto);
+    await doc.populate('warehouse');
+    return toView(doc.toObject() as unknown as InventoryItemDoc);
   } catch (err) {
-    throw translatePrismaError(err, dto.sku);
+    throw translateMongoError(err, dto.sku);
   }
 }
 
 export async function update(
-  id: number,
-  dto: UpdateInventoryItemDto
+  id: string,
+  dto: UpdateInventoryItemDto,
 ): Promise<InventoryItemView> {
+  let doc: InventoryItemDoc | null;
   try {
-    const item = await prisma.inventoryItem.update({
-      where: { id },
-      data: dto,
-      include: { warehouse: true },
-    });
-    return toView(item);
+    doc = await InventoryItem.findByIdAndUpdate(id, dto, { new: true, runValidators: true })
+      .populate('warehouse')
+      .lean<InventoryItemDoc | null>();
   } catch (err) {
-    throw translatePrismaError(err, dto.sku, id);
+    throw translateMongoError(err, dto.sku, id);
+  }
+  if (!doc) {
+    throw new AppError(404, `El ítem de inventario ${id} no existe`);
+  }
+  return toView(doc);
+}
+
+export async function remove(id: string): Promise<void> {
+  let doc: InventoryItemDoc | null;
+  try {
+    doc = await InventoryItem.findByIdAndDelete(id).lean<InventoryItemDoc | null>();
+  } catch (err) {
+    throw translateMongoError(err, undefined, id);
+  }
+  if (!doc) {
+    throw new AppError(404, `El ítem de inventario ${id} no existe`);
   }
 }
 
-export async function remove(id: number): Promise<void> {
-  try {
-    await prisma.inventoryItem.delete({ where: { id } });
-  } catch (err) {
-    throw translatePrismaError(err, undefined, id);
-  }
+// Usado por warehouses.service para impedir borrar una bodega con ítems.
+export async function countByWarehouse(warehouseId: string): Promise<number> {
+  return InventoryItem.countDocuments({ warehouse: warehouseId });
 }
 
-function translatePrismaError(err: unknown, sku?: string, id?: number): unknown {
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    switch (err.code) {
-      case 'P2002':
-        return new AppError(
-          409,
-          sku
-            ? `Ya existe un ítem de inventario con el sku "${sku}"`
-            : 'Ya existe un registro con ese valor único'
-        );
-      case 'P2003':
-        return new AppError(400, 'La bodega indicada en warehouseId no existe');
-      case 'P2025':
-        return new AppError(404, `El ítem de inventario ${id} no existe`);
-    }
+function translateMongoError(err: unknown, sku?: string, id?: string): unknown {
+  if (isDuplicateKeyError(err)) {
+    return new AppError(
+      409,
+      sku ? `Ya existe un ítem de inventario con el sku "${sku}"` : 'Ya existe un registro con ese valor único',
+    );
   }
-  // Cualquier otro error sube tal cual → 500 en el errorHandler.
+  if (err instanceof mongoose.Error.CastError) {
+    return new AppError(400, `"${id}" no es un ObjectId válido`);
+  }
   return err;
+}
+
+function isDuplicateKeyError(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && (err as { code?: number }).code === 11000;
 }

@@ -1,13 +1,11 @@
-$ curl -i -X POST http://localhost:3000/api/v1/inventory-items \
-  -H "Content-Type: application/json" \
-  -d '{"sku":"PKG-0001","name":"Pallet duplicado","category":"packaging","price":9,"stock":10,"location":"A-02","warehouseId":1}'
+$ curl -i -X POST http://localhost:3000/api/v1/inventory-items -H 'Content-Type: application/json' -d '{"sku":"PKG-0001","name":"Pallet duplicado","category":"packaging","price":9,"stock":10,"location":"A-02","warehouse":"6a9c9150d5b626d6d654ba22"}'
 
 HTTP/1.1 409 Conflict
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
 Content-Length: 98
 ETag: W/"62-xdjoWJEr5J1vBGJW7rz8zWoxLaA"
-Date: Sun, 09 Aug 2026 23:32:18 GMT
+Date: Sat, 05 Sep 2026 22:03:56 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 

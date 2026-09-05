@@ -1,0 +1,12 @@
+$ curl -i http://localhost:3000/api/v1/inventory-items/abc
+
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 178
+ETag: W/"b2-3Z7wY9BNW++PNcLq6iQZdSKQ5sg"
+Date: Sat, 05 Sep 2026 22:03:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Validation Error","message":"Los datos enviados no son válidos","issues":[{"field":"id","message":"El id debe ser un ObjectId válido (24 caracteres hexadecimales)"}]}

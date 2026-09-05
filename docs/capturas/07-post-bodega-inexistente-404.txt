@@ -1,0 +1,12 @@
+$ curl -i -X POST http://localhost:3000/api/v1/inventory-items -H 'Content-Type: application/json' -d '{"sku":"PKG-0010","name":"Caja plastica apilable","category":"packaging","price":19.9,"stock":40,"location":"A-10","warehouse":"64b000000000000000000000"}'
+
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 86
+ETag: W/"56-Nty4kpF71TFUMvhm0nvBl17hr8c"
+Date: Sat, 05 Sep 2026 22:03:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Application Error","message":"La bodega 64b000000000000000000000 no existe"}

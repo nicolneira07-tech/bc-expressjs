@@ -1,0 +1,12 @@
+$ pnpm db:seed
+
+
+> bc-expressjs-semana06-logistica@1.0.0 db:seed C:\Users\USER\Documents\trabajos sena\Bootcamp_Express_Erick\bc-expressjs-entrega
+> tsx src/seed.ts
+
+(node:22760) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-05 17:01:52 [32minfo[39m: Iniciando seed...
+2026-09-05 17:01:52 [32minfo[39m:   2 bodegas creadas: BOG-01, MED-01
+2026-09-05 17:01:52 [32minfo[39m:   6 ítems de inventario creados
+2026-09-05 17:01:52 [32minfo[39m: Seed completado.

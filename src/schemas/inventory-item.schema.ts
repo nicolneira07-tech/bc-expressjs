@@ -1,15 +1,14 @@
 // ============================================
 // SCHEMAS — Validación con Zod del recurso InventoryItem
 // ============================================
-// Única fuente de verdad para la entrada: el schema valida en runtime y de él
-// se infieren los tipos con z.infer<>. Prisma aporta los tipos de SALIDA
-// (los que devuelve la base de datos); Zod los de ENTRADA.
+// Cambia una sola cosa respecto a la semana 05: `warehouseId` (entero,
+// autoincremental de PostgreSQL) pasa a ser `warehouse` (ObjectId de Mongo,
+// 24 caracteres hexadecimales). También vive aquí `objectIdSchema`, que
+// valida el `:id` de la URL para las dos entidades — el mismo lugar que usa
+// el starter del bootcamp para el schema de la entidad principal.
 
 import { z } from 'zod';
 
-// Categorías válidas del catálogo del almacén.
-// En la base de datos `category` es un String: la lista de valores válidos se
-// controla aquí, en el borde de la API, para poder ampliarla sin migración.
 export const INVENTORY_CATEGORIES = [
   'packaging',
   'electronics',
@@ -18,12 +17,14 @@ export const INVENTORY_CATEGORIES = [
   'raw-materials',
 ] as const;
 
-// Ubicación dentro de la bodega: PASILLO-ESTANTE (una letra, guion, 2 dígitos).
 const LOCATION_REGEX = /^[A-Z]-\d{2}$/;
-
-// SKU del catálogo: 3 letras, guion, 4 dígitos (ej. PKG-0001). Es @unique en
-// la base de datos, así que un duplicado dispara el P2002 de Prisma.
 const SKU_REGEX = /^[A-Z]{3}-\d{4}$/;
+const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+
+// Valida un ObjectId de Mongo (id de la URL o campo de referencia).
+export const objectIdSchema = z
+  .string({ error: 'El id es obligatorio' })
+  .regex(OBJECT_ID_REGEX, 'El id debe ser un ObjectId válido (24 caracteres hexadecimales)');
 
 export const createInventoryItemSchema = z.object({
   sku: z
@@ -58,21 +59,12 @@ export const createInventoryItemSchema = z.object({
 
   active: z.boolean().default(true),
 
-  // Clave foránea a la bodega que almacena el ítem (relación 1:N).
-  warehouseId: z
-    .number({ error: 'warehouseId es obligatorio' })
-    .int('warehouseId debe ser un número entero')
-    .positive('warehouseId debe ser un número entero positivo'),
+  // Referencia a la bodega que almacena el ítem (relación 1:N).
+  warehouse: objectIdSchema.describe('ID de la bodega'),
 });
 
 // Actualización parcial — reutiliza las reglas del schema de creación.
 export const updateInventoryItemSchema = createInventoryItemSchema.partial();
-
-// Validación del parámetro :id de la URL (llega siempre como string).
-export const idParamSchema = z.coerce
-  .number({ error: 'El id debe ser numérico' })
-  .int('El id debe ser un número entero')
-  .positive('El id debe ser un número entero positivo');
 
 // Query params de paginación, con valores por defecto.
 export const paginationSchema = z.object({

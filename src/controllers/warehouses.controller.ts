@@ -5,7 +5,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as service from '../services/warehouses.service';
 import { createWarehouseSchema, updateWarehouseSchema } from '../schemas/warehouse.schema';
-import { idParamSchema } from '../schemas/inventory-item.schema';
+import { objectIdSchema } from '../schemas/inventory-item.schema';
 import { SingleResponse } from '../types';
 
 export async function getAll(_req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -19,7 +19,7 @@ export async function getAll(_req: Request, res: Response, next: NextFunction): 
 
 export async function getById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const parsedId = idParamSchema.safeParse(req.params['id']);
+    const parsedId = objectIdSchema.safeParse(req.params['id']);
     if (!parsedId.success) {
       next(parsedId.error);
       return;
@@ -51,7 +51,7 @@ export async function create(req: Request, res: Response, next: NextFunction): P
 
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const parsedId = idParamSchema.safeParse(req.params['id']);
+    const parsedId = objectIdSchema.safeParse(req.params['id']);
     if (!parsedId.success) {
       next(parsedId.error);
       return;
@@ -73,7 +73,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
 
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const parsedId = idParamSchema.safeParse(req.params['id']);
+    const parsedId = objectIdSchema.safeParse(req.params['id']);
     if (!parsedId.success) {
       next(parsedId.error);
       return;

@@ -1,20 +1,24 @@
 // ============================================
 // TYPES — Dominio: Logística / Almacén
 // ============================================
-// Desde la semana 05 las entidades las genera Prisma a partir de
-// `prisma/schema.prisma` (`InventoryItem`, `Warehouse`), y los DTOs de entrada
-// se infieren de los schemas Zod. Aquí solo quedan los tipos que no vienen de
-// ninguno de los dos: los contratos de respuesta de la API y las vistas que
-// exponemos al cliente.
+// Con Mongoose las entidades ya no las genera un cliente aparte (como el
+// `@prisma/client` de la semana 05): los `interface I*` viven junto a cada
+// modelo (`models/*.model.ts`). Aquí solo quedan las "vistas" que expone la
+// API (con `id: string` en vez de `_id: ObjectId`) y los contratos de
+// respuesta, que no cambian de una semana a otra.
 
-import { Warehouse } from '@prisma/client';
+export interface WarehouseView {
+  id: string;
+  code: string;
+  name: string;
+  city: string;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-// Vista de un ítem tal como sale de la API.
-// Se diferencia del modelo de Prisma en `price`: en la base de datos es
-// Decimal(12,2) (tipo Prisma.Decimal) y aquí se convierte a `number` para que
-// el JSON siga siendo el mismo contrato de las semanas 02-04.
 export interface InventoryItemView {
-  id: number;
+  id: string;
   sku: string;
   name: string;
   category: string;
@@ -22,13 +26,11 @@ export interface InventoryItemView {
   stock: number;
   location: string;
   active: boolean;
-  warehouseId: number;
-  warehouse?: WarehouseView;
+  // Sin popular viaja el ObjectId como string; poblado, el objeto completo.
+  warehouse: string | WarehouseView;
   createdAt: Date;
   updatedAt: Date;
 }
-
-export type WarehouseView = Omit<Warehouse, 'items'>;
 
 // Contratos de respuesta (genéricos, no se adaptan al dominio)
 export interface SingleResponse<T> {
