@@ -1,0 +1,23 @@
+HTTP/1.1 500 Internal Server Error
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+RateLimit-Policy: 100;w=900
+RateLimit: limit=100, remaining=87, reset=883
+Content-Type: application/json; charset=utf-8
+Content-Length: 1986
+ETag: W/"7c2-J85UBerUY6QZe7X1WN3U8KomlPs"
+Date: Sun, 20 Sep 2026 03:38:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Internal Server Error","message":"CORS: origen \"http://evil-site.com\" no está autorizado","stack":"Error: CORS: origen \"http://evil-site.com\" no está autorizado\n    at origin (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\src\\config\\security.ts:41:14)\n    at C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handleRequest (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at C:\\Users\\USER\\Documents\\trabajos sena\\Bootcamp_Express_Erick\\bc-expressjs-entrega\\node_modules\\.pnpm\\express-rate-limit@7.5.0_express@5.1.0\\node_modules\\express-rate-limit\\dist\\index.cjs:822:7"}
