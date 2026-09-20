@@ -1,86 +1,101 @@
-# Capturas — Semana 07
+# Capturas — Semana 08
 
-Evidencias pedidas por la rúbrica de la semana 07 (autenticación JWT). Todas
-se tomaron contra `http://localhost:3000` con MongoDB levantado
-(`docker compose up -d`), la base sembrada (`pnpm db:seed`) y el servidor
-corriendo (`pnpm dev`). La salida completa de cada `curl -i` está en el
-`.txt` correspondiente.
+Evidencias pedidas por la rúbrica de la semana 08 (RBAC + capas de
+seguridad). Todas se tomaron contra `http://localhost:3000` con MongoDB
+levantado, la base sembrada (`pnpm db:seed`) y el servidor corriendo
+(`pnpm dev`). La salida completa de cada `curl -i` está en el `.txt`
+correspondiente.
 
 | # | Archivo | Caso | Esperado |
 |---|---|---|---|
-| 01 | `01-register-201.txt` | `POST /api/v1/auth/register` con datos válidos | `201` + usuario sin password en la respuesta |
-| 02 | `02-register-email-duplicado-409.txt` | `POST /auth/register` con un email ya registrado | `409` |
-| 03 | `03-register-validacion-400.txt` | `POST /auth/register` con email/password/name inválidos | `400` + `issues[]` de Zod |
-| 04 | `04-login-200-cookies.txt` | `POST /api/v1/auth/login` con credenciales válidas | `200` + dos `Set-Cookie` **HttpOnly** (`accessToken`, `refreshToken`) |
-| 05 | `05-login-credenciales-invalidas-401.txt` | `POST /auth/login` con password incorrecto | `401` — mismo mensaje que "usuario no existe" (previene user enumeration) |
-| 06 | `06-me-sin-cookie-401.txt` | `GET /api/v1/auth/me` sin cookie | `401` |
-| 07 | `07-me-con-cookie-200.txt` | `GET /auth/me` con la cookie de acceso | `200` + perfil del usuario autenticado |
-| 08 | `08-inventory-sin-cookie-401.txt` | `GET /api/v1/inventory-items` sin cookie | `401` — el recurso de negocio ahora requiere sesión |
-| 09 | `09-inventory-con-cookie-200.txt` | `GET /inventory-items` con cookie | `200` — paginado, igual que semana 06 |
-| 10 | `10-warehouses-con-cookie-200.txt` | `GET /api/v1/warehouses` con cookie | `200` |
-| 11 | `11-inventory-post-con-cookie-201.txt` | `POST /inventory-items` con cookie | `201` |
-| 12 | `12-refresh-200-rotacion.txt` | `POST /api/v1/auth/refresh` con el refresh token vigente | `200` + par de cookies **nuevo** (rotación) |
-| 13 | `13-refresh-token-rotado-401.txt` | Reintentar `/refresh` con el refresh token **anterior** (ya rotado) | `401` — la rotación de verdad invalida el token viejo |
-| 14 | `14-logout-200.txt` | `POST /api/v1/auth/logout` | `200` + cookies limpiadas (`Set-Cookie` con `Expires` en 1970) |
-| 15 | `15-refresh-tras-logout-401.txt` | `/refresh` después de logout | `401` — no queda refresh token activo |
-| 16 | `16-inventory-tras-logout-401.txt` | `GET /inventory-items` después de logout | `401` — la cookie de acceso ya fue borrada |
-| 17 | `17-ruta-inexistente-404.txt` | `GET /api/v1/no-existe` | `404` JSON |
-| 18 | `18-health.txt` | `GET /health` | `200` |
-| 19 | `19-build.txt` | `pnpm build` | Sin errores de TypeScript |
-| 20 | `20-seed.txt` | `pnpm db:seed` | 2 usuarios + 2 bodegas + 6 ítems, sin errores |
-| 21 | `21-server-startup-log.txt` | Salida de consola de `pnpm dev` | Conexión a Mongo + servidor escuchando |
+| 01 | `01-health-headers-helmet.txt` | `GET /health` | `200` + cabeceras de Helmet (`Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options`, etc.) y `RateLimit-*` |
+| 02 | `02-register-201.txt` | `POST /auth/register` | `201` |
+| 03 | `03-register-duplicado-409.txt` | `POST /auth/register` con email repetido | `409` |
+| 04 | `04-nosql-injection-login-400.txt` | `POST /auth/login` con `{"email":{"$gt":""},"password":{"$gt":""}}` | `400` — `sanitizeBody` limpia los operadores `$gt`, y Zod rechaza lo que queda |
+| 05 | `05-login-operator-200.txt` | Login con `operador@almacen.com` | `200` + cookie de sesión con `role: "operator"` |
+| 06 | `06-login-admin-200.txt` | Login con `admin@almacen.com` | `200` + cookie de sesión con `role: "admin"` |
+| 07 | `07-inventory-sin-token-401.txt` | `GET /api/v1/inventory-items` sin cookie | `401` |
+| 08 | `08-inventory-delete-operator-403.txt` | `DELETE /inventory-items/:id` con sesión de `operator` | `403` — RBAC: borrar es solo de `admin` |
+| 09 | `09-inventory-delete-admin-204.txt` | Mismo `DELETE` con sesión de `admin` | `204` |
+| 10 | `10-warehouse-post-operator-403.txt` | `POST /api/v1/warehouses` con sesión de `operator` | `403` |
+| 11 | `11-warehouse-post-admin-201.txt` | Mismo `POST` con sesión de `admin` | `201` |
+| 12 | `12-cors-origen-no-permitido.txt` | Request con `Origin: http://evil-site.com` | Bloqueado — el paquete `cors` corta la petición antes del handler |
+| 13 | `13-cors-origen-permitido.txt` | Request con `Origin: http://localhost:5173` (en la whitelist) | `Access-Control-Allow-Origin` presente en la respuesta |
+| 14 | `14-ruta-inexistente-404.txt` | `GET /api/v1/no-existe` | `404` JSON |
+| 15 | `15-build.txt` | `pnpm build` | Sin errores de TypeScript |
+| 16 | `16-auth-rate-limit-429.txt` | 6º intento de login en la ventana de 15 min (`authLimiter`, `limit: 5`) | `429` + header `Retry-After` |
+| 17 | `17-seed.txt` | `pnpm db:seed` | 2 usuarios + 2 bodegas + 6 ítems, sin errores |
 
-## El bug que encontró esta batería de pruebas
+## Dos decisiones que no salieron del starter tal cual
 
-El caso **13** no salió a la primera. La primera versión de
-`auth.service.ts` guardaba el refresh token con
-`bcrypt.hash(refreshToken, 10)`, calcado del starter del bootcamp. Al probar
-la reutilización de un token ya rotado, el servidor lo aceptaba igual — la
-rotación no invalidaba nada.
+**`express-mongo-sanitize` no funciona con Express 5.** Es la librería que
+recomienda el material de la semana para mitigar NoSQL injection, pero
+intenta reasignar `req.query` completo — y en Express 5 `req.query` es un
+getter sin setter (se parsea on-demand). Con esa librería instalada,
+**cualquier** petición (maliciosa o no) revienta con `500`
+(`Cannot set property query of ... which has only a getter`), comprobado
+localmente antes de descartarla. La solución fue un middleware propio,
+`src/middlewares/sanitize.ts`, que solo muta `req.body` (sí es escribible en
+Express 5) y elimina recursivamente cualquier clave que empiece con `$` o
+contenga `.`. El caso **04** de esta tabla prueba que funciona: el operador
+`$gt` desaparece y lo que le llega a Zod (`{}`) no pasa la validación de
+`email`/`password` como string.
 
-Causa: **bcrypt solo usa los primeros 72 bytes del input**. Dos JWT de
-refresh del mismo usuario, firmados segundos aparte, son idénticos en esos
-72 bytes: mismo header (`eyJhbGciOi...`) y mismo claim `sub` (el id de
-usuario, fijo); lo único que cambia (`iat`/`exp`) va al final del payload,
-más allá del byte 72. `bcrypt.compare(tokenViejo, hash(tokenNuevo))`
-devolvía `true` sin importar cuál de los dos tokens del usuario se probara.
-
-La corrección (`src/services/auth.service.ts`, funciones `hashRefreshToken`
-/ `matchesRefreshHash`): un JWT ya es alta entropía — no es una contraseña
-humana reutilizable que necesite el costo computacional de bcrypt — así que
-se guarda un `SHA-256` de longitud fija (64 hex, muy por debajo del límite)
-y se compara con `crypto.timingSafeEqual` para evitar timing attacks.
-Repetir el caso 13 después del fix dio el `401` esperado.
+**`authLimiter` solo en `/register` y `/login`, no en todo `/auth`.** La
+primera versión montaba el limiter sobre el router completo
+(`app.use('/api/v1/auth', authLimiter, authRouter)`), lo que también
+limitaba `/me`, `/refresh` y `/logout` a 5 peticiones cada 15 minutos —
+demasiado agresivo para rutas que ya están detrás de una sesión válida y no
+son el objetivo típico de fuerza bruta. Se movió el limiter a las dos rutas
+públicas de `auth.routes.ts` (`authLimiter` como segundo argumento de
+`.post('/register', ...)` y `.post('/login', ...)`), dejando el resto bajo
+el límite global (100 req / 15 min).
 
 ## Reproducir las capturas
 
 ```bash
 docker compose up -d
 pnpm install
-cp .env.example .env   # agrega JWT_ACCESS_SECRET y JWT_REFRESH_SECRET (openssl rand -base64 64)
-pnpm db:seed            # 20 — operador@almacen.com / Operador123, admin@almacen.com / Admin1234
-pnpm build               # 19
-pnpm dev                 # 21 — deja el servidor corriendo en otra terminal
+cp .env.example .env
+pnpm db:seed     # 17 — operador@almacen.com/Operador123, admin@almacen.com/Admin1234
+pnpm build       # 15
+pnpm dev
 
-CJ=cookies.txt
+curl -i http://localhost:3000/health                                            # 01
 
 curl -i -X POST http://localhost:3000/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"nuevo.operador@almacen.com","password":"Clave1234","name":"Nuevo Operador"}'   # 01, repetir para 02
+  -d '{"email":"nuevo.operador@almacen.com","password":"Clave1234","name":"Nuevo Operador"}'   # 02, repetir → 03
 
 curl -i -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"operador@almacen.com","password":"Operador123"}' -c "$CJ"   # 04
+  -H "Content-Type: application/json" -d '{"email":{"$gt":""},"password":{"$gt":""}}'          # 04
 
-curl -i -b "$CJ" http://localhost:3000/api/v1/auth/me                                          # 07
-curl -i -b "$CJ" "http://localhost:3000/api/v1/inventory-items?page=1&limit=2"                 # 09
+CJ_OP=cj-op.txt; CJ_ADMIN=cj-admin.txt
+curl -i -c "$CJ_OP" -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" -d '{"email":"operador@almacen.com","password":"Operador123"}'   # 05
+curl -i -c "$CJ_ADMIN" -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" -d '{"email":"admin@almacen.com","password":"Admin1234"}'        # 06
 
-OLD=$(grep refreshToken "$CJ" | tail -1 | awk -F'\t' '{print $7}')
-curl -i -c "$CJ" -b "$CJ" -X POST http://localhost:3000/api/v1/auth/refresh                     # 12
-curl -i -X POST http://localhost:3000/api/v1/auth/refresh -H "Cookie: refreshToken=$OLD"        # 13 → 401
+curl -i http://localhost:3000/api/v1/inventory-items                                            # 07
 
-curl -i -c "$CJ" -b "$CJ" -X POST http://localhost:3000/api/v1/auth/logout                      # 14
-curl -i -b "$CJ" -X POST http://localhost:3000/api/v1/auth/refresh                              # 15 → 401
+ITEM=$(curl -s -b "$CJ_OP" "http://localhost:3000/api/v1/inventory-items?limit=1" | jq -r '.data[0].id')
+curl -i -b "$CJ_OP" -X DELETE "http://localhost:3000/api/v1/inventory-items/$ITEM"                # 08 → 403
+curl -i -b "$CJ_ADMIN" -X DELETE "http://localhost:3000/api/v1/inventory-items/$ITEM"              # 09 → 204
+
+curl -i -b "$CJ_OP" -X POST http://localhost:3000/api/v1/warehouses \
+  -H "Content-Type: application/json" -d '{"code":"CAL-01","name":"Bodega Cali","city":"Cali"}'    # 10 → 403
+curl -i -b "$CJ_ADMIN" -X POST http://localhost:3000/api/v1/warehouses \
+  -H "Content-Type: application/json" -d '{"code":"CAL-01","name":"Bodega Cali","city":"Cali"}'    # 11 → 201
+
+curl -i -H "Origin: http://evil-site.com" http://localhost:3000/health                            # 12
+curl -i -H "Origin: http://localhost:5173" http://localhost:3000/health                           # 13
+
+curl -i http://localhost:3000/api/v1/no-existe                                                    # 14
+
+for i in 1 2 3 4 5 6; do
+  curl -s -i -X POST http://localhost:3000/api/v1/auth/login \
+    -H "Content-Type: application/json" -d '{"email":"nadie@almacen.com","password":"x"}' | head -1
+done   # el 6º es 429                                                                              # 16
 ```
 
 > **En PowerShell**, `curl` es un alias de `Invoke-WebRequest` y rompe las

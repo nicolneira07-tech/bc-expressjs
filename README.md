@@ -14,7 +14,112 @@ Cada semana se entrega en su propia rama `week-<NN>`.
 | 04 | [`week-04`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-04) | Validación, Errores y Logging |
 | 05 | [`week-05`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-05) | PostgreSQL + Prisma ORM |
 | 06 | [`week-06`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-06) | MongoDB + Mongoose |
-| 07 | `week-07` | Autenticación JWT |
+| 07 | [`week-07`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-07) | Autenticación JWT |
+| 08 | `week-08` | Autorización (RBAC) y seguridad |
+
+---
+
+## Semana 08 — RBAC y capas de seguridad
+
+Sobre la autenticación de la semana 07 se agrega **autorización por rol**
+(RBAC) y cuatro capas de seguridad HTTP: `helmet`, rate limiting, CORS con
+whitelist y sanitización contra NoSQL injection. Nada del modelo de datos ni
+de las reglas de negocio cambió — todo lo nuevo vive en middlewares.
+
+### Autenticación vs. autorización
+
+`authMiddleware` (semana 07) responde **"¿quién eres?"** — sin sesión
+válida, `401`. `requireRole('admin')` (nueva) responde **"¿puedes hacer
+esto?"** — con sesión válida pero el rol equivocado, `403`. Siempre en ese
+orden: `authMiddleware` antes, `requireRole` después.
+
+### RBAC aplicado al dominio
+
+| Recurso | Acción | Rol requerido |
+|---|---|---|
+| `inventory-items` | Listar, ver, crear, actualizar | Cualquier sesión (`operator` o `admin`) |
+| `inventory-items` | **Eliminar** | Solo `admin` |
+| `warehouses` | Listar, ver | Cualquier sesión |
+| `warehouses` | **Crear, actualizar, eliminar** | Solo `admin` |
+
+Criterio: el trabajo diario (dar de alta/ajustar stock) lo hace cualquier
+operador; las decisiones de mayor peso — sacar un ítem del catálogo del
+todo, o tocar la estructura física de la empresa (abrir/cerrar una bodega)
+— quedan reservadas a `admin`.
+
+```jsonc
+// DELETE /api/v1/inventory-items/:id con sesión de operator → 403
+{ "error": "Application Error", "message": "Acceso denegado: se requiere el rol admin" }
+
+// mismo DELETE con sesión de admin → 204
+```
+
+### Cabeceras de seguridad (Helmet)
+
+`app.use(helmet())` con la configuración por defecto agrega, entre otras:
+`Content-Security-Policy`, `X-Content-Type-Options: nosniff`,
+`X-Frame-Options: SAMEORIGIN`, `Strict-Transport-Security`. Verificable en
+cualquier respuesta — ver `docs/capturas/01-health-headers-helmet.txt`.
+
+### Rate limiting diferenciado
+
+| Limiter | Alcance | Límite |
+|---|---|---|
+| `globalLimiter` | Toda la API | 100 req / 15 min |
+| `authLimiter` | Solo `POST /auth/register` y `POST /auth/login` | 5 req / 15 min |
+
+`login`/`register` son el blanco típico de fuerza bruta y credential
+stuffing — su límite es mucho más bajo que el del resto de la API. Al
+superarlo: `429` + header `Retry-After`.
+
+### CORS con whitelist
+
+```ts
+const ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:3000'];
+```
+
+Nunca `cors()` a secas (eso equivale a `origin: '*'`, incompatible además
+con `credentials: true`, que es obligatorio para que el navegador mande las
+cookies HttpOnly). Un origen fuera de la whitelist no puede completar la
+petición.
+
+### Sanitización contra NoSQL injection — con un ajuste sobre el starter
+
+El paquete recomendado por el bootcamp, `express-mongo-sanitize`, **no es
+compatible con Express 5**: intenta reasignar `req.query` completo, que en
+Express 5 es un getter sin setter — con ese paquete instalado, cualquier
+petición (no solo las maliciosas) responde `500`. Se reemplazó por un
+middleware propio (`src/middlewares/sanitize.ts`) que solo limpia
+`req.body`, eliminando recursivamente cualquier clave que empiece con `$` o
+contenga `.`. Detalle completo y evidencia:
+[`docs/capturas/README.md`](docs/capturas/README.md).
+
+```jsonc
+// POST /api/v1/auth/login con { "email": { "$gt": "" }, "password": { "$gt": "" } } → 400
+// sanitizeBody deja email/password como `{}`, y Zod los rechaza por no ser string
+{ "error": "Validation Error", "message": "Los datos enviados no son válidos", "issues": [...] }
+```
+
+### Usuarios de prueba (sin cambios respecto a la semana 07)
+
+| Email | Password | Rol |
+|---|---|---|
+| `operador@almacen.com` | `Operador123` | `operator` |
+| `admin@almacen.com` | `Admin1234` | `admin` |
+
+### Cómo correr el proyecto
+
+```bash
+docker compose up -d
+pnpm install
+cp .env.example .env
+pnpm db:seed
+pnpm dev
+```
+
+Sin variables de entorno nuevas esta semana. Evidencia completa (RBAC,
+headers, CORS, rate limit, NoSQL injection):
+[`docs/capturas/`](docs/capturas/).
 
 ---
 

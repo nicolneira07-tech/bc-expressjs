@@ -1,4 +1,0 @@
-
-> bc-expressjs-semana07-logistica@1.0.0 build C:\Users\USER\Documents\trabajos sena\Bootcamp_Express_Erick\bc-expressjs-entrega
-> tsc
-
