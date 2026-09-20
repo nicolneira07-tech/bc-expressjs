@@ -1,7 +1,7 @@
 {
-  "name": "bc-expressjs-semana08-logistica",
+  "name": "bc-expressjs-semana09-logistica",
   "version": "1.0.0",
-  "description": "Proyecto semanal — API de inventario de almacén con RBAC y capas de seguridad",
+  "description": "Proyecto semanal — API de inventario de almacén con tests (Jest + Supertest)",
   "main": "dist/server.js",
   "engines": {
     "node": ">=22.0.0"
@@ -11,7 +11,10 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "db:seed": "tsx src/seed.ts"
+    "db:seed": "tsx src/seed.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "bcrypt": "5.1.1",
@@ -32,15 +35,23 @@
     "@types/cookie-parser": "1.4.8",
     "@types/cors": "2.8.17",
     "@types/express": "5.0.3",
+    "@types/jest": "29.5.14",
     "@types/jsonwebtoken": "9.0.9",
     "@types/morgan": "1.9.10",
     "@types/node": "22.15.21",
+    "@types/supertest": "6.0.3",
+    "jest": "29.7.0",
+    "mongodb-memory-server": "10.1.4",
+    "supertest": "7.1.0",
+    "ts-jest": "29.3.2",
+    "ts-node": "10.9.2",
     "tsx": "4.19.4",
     "typescript": "5.8.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "bcrypt"
+      "bcrypt",
+      "mongodb-memory-server"
     ]
   }
 }

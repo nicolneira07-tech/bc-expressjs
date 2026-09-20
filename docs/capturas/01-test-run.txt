@@ -1,0 +1,351 @@
+> bc-expressjs-semana09-logistica@1.0.0 test C:\Users\USER\Documents\trabajos sena\Bootcamp_Express_Erick\bc-expressjs-entrega
+> jest "--silent" "--verbose"
+PASS src/__tests__/sanitize.test.ts (20.566 s)
+  sanitizeBody middleware — Unit Tests
+    √ elimina claves que empiezan con "$" (operadores de Mongo) (89 ms)
+    √ elimina claves con "." (acceso a sub-documento) (1 ms)
+    √ sanitiza objetos anidados y arrays (2 ms)
+    √ no toca un body ya limpio (3 ms)
+    √ no revienta si el body no es un objeto (undefined, ya vaciado por json()) (2 ms)
+PASS src/__tests__/warehouses.service.test.ts (34.334 s)
+  WarehousesService — Unit Tests
+    findAll()
+      √ devuelve todas las bodegas (76 ms)
+      √ devuelve un array vacío si no hay bodegas (1 ms)
+    findById()
+      √ devuelve la bodega cuando existe (5 ms)
+      √ lanza AppError 404 cuando no existe (10 ms)
+    create()
+      √ crea la bodega delegando en el repository (6 ms)
+    update()
+      √ actualiza la bodega delegando en el repository (1 ms)
+    remove()
+      √ elimina la bodega cuando no tiene ítems asociados (3 ms)
+      √ lanza AppError 409 si la bodega todavía tiene ítems — regla de negocio sin FK real (2 ms)
+PASS src/__tests__/requireRole.test.ts
+  requireRole middleware — Unit Tests
+    √ llama a next(AppError 401) si no hay req.user (9 ms)
+    √ llama a next(AppError 403) si el rol no está en la lista permitida (2 ms)
+    √ llama a next() sin argumentos si el rol coincide (1 ms)
+    √ acepta múltiples roles permitidos
+PASS src/__tests__/inventory-items.service.test.ts (14.483 s)
+  InventoryItemsService — Unit Tests
+    findAll()
+      √ devuelve los items paginados con el total del repository (4 ms)
+      √ devuelve un array vacío cuando no hay items (2 ms)
+    findById()
+      √ devuelve el item cuando existe (1 ms)
+      √ lanza AppError 404 cuando el item no existe (4 ms)
+    create()
+      √ crea el item cuando la bodega existe (4 ms)
+      √ lanza AppError 404 si la bodega no existe — nunca llega a crear el item (1 ms)
+    update()
+      √ actualiza el item sin volver a validar la bodega si no cambia (1 ms)
+      √ valida la bodega nueva cuando el update cambia `warehouse` (1 ms)
+      √ lanza AppError 404 si la bodega nueva no existe (1 ms)
+    remove()
+      √ elimina el item delegando en el repository (2 ms)
+      √ propaga el AppError 404 del repository cuando no existe (1 ms)
+PASS src/__tests__/auth.service.test.ts (39.88 s)
+  AuthService — Unit Tests
+    register()
+      √ hashea la contraseña y crea el usuario cuando el email es nuevo (581 ms)
+      √ lanza AppError 409 si el email ya está registrado (30 ms)
+    login()
+      √ devuelve un access y un refresh token con credenciales válidas (365 ms)
+      √ lanza AppError 401 con el mismo mensaje si el usuario no existe (2 ms)
+      √ lanza AppError 401 con el mismo mensaje si el password no coincide (282 ms)
+    refresh() — rotación
+      √ emite un par nuevo cuando el refresh token coincide con el hash guardado (304 ms)
+      √ lanza AppError 401 al reusar un refresh token ya rotado (no coincide con el hash vigente) (5 ms)
+      √ lanza AppError 401 si el token no verifica (firma inválida) (2 ms)
+      √ lanza AppError 401 si el usuario no tiene sesión activa (sin refreshToken guardado) (4 ms)
+    logout()
+      √ invalida el refresh token del usuario (1 ms)
+    getMe()
+      √ devuelve el perfil cuando el usuario existe (1 ms)
+      √ lanza AppError 404 si el usuario ya no existe (2 ms)
+2026-09-19 23:02:59 [32mhttp[39m: [0mGET /health [32m200[0m 8.397 ms - 66[0m
+2026-09-19 23:02:59 [32mhttp[39m: [0mGET /health [32m200[0m 0.629 ms - 66[0m
+2026-09-19 23:02:59 [31merror[39m: Unhandled error: CORS: origen "http://evil-site.com" no está autorizado
+2026-09-19 23:02:59 [32mhttp[39m: [0mGET /health [32m200[0m 1.224 ms - 66[0m
+2026-09-19 23:02:59 [33mwarn[39m: AppError 404: Ruta GET /api/v1/no-existe no encontrada
+2026-09-19 23:02:59 [32mhttp[39m: [0mGET /api/v1/no-existe [33m404[0m 3.910 ms - 82[0m
+2026-09-19 23:02:59 [33mwarn[39m: AppError 401: No autenticado: falta el token de acceso
+2026-09-19 23:02:59 [32mhttp[39m: [0mGET /api/v1/inventory-items [33m401[0m 15.601 ms - 82[0m
+2026-09-19 23:02:59 [33mwarn[39m: AppError 401: No autenticado: falta el token de acceso
+PASS src/__tests__/security.routes.test.ts (48.887 s)
+  Cabeceras de seguridad (Helmet)
+    √ GET /health incluye las cabeceras de Helmet (197 ms)
+  CORS
+    √ permite un origen de la whitelist (24 ms)
+    √ bloquea un origen fuera de la whitelist (22 ms)
+    √ permite peticiones sin header Origin (no son de navegador) (16 ms)
+  Rutas no registradas
+    √ 404 en formato JSON, no HTML (26 ms)
+2026-09-19 23:02:59 [32mhttp[39m: [0mGET /api/v1/warehouses [33m401[0m 11.568 ms - 82[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 222.654 ms - 197[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 196.373 ms - 213[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 149.879 ms - 197[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 211.490 ms - 213[0m
+2026-09-19 23:03:00 [33mwarn[39m: AppError 409: Ya existe un usuario registrado con el email "operador@almacen.com"
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [33m409[0m 7.196 ms - 111[0m
+2026-09-19 23:03:00 [33mwarn[39m: Validation Error: password, password
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [33m400[0m 3.749 ms - 242[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 233.957 ms - 27[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 142.127 ms - 197[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 35.775 ms - 465[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 187.129 ms - 27[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mGET /api/v1/inventory-items?page=1&limit=10 [32m200[0m 14.320 ms - 497[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 11.264 ms - 208[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 184.980 ms - 27[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 154.971 ms - 213[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 167.603 ms - 213[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 135.433 ms - 197[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 150.017 ms - 27[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 157.020 ms - 27[0m
+2026-09-19 23:03:00 [33mwarn[39m: Validation Error: limit
+2026-09-19 23:03:00 [32mhttp[39m: [0mGET /api/v1/inventory-items?limit=1000 [33m400[0m 2.978 ms - 143[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mGET /api/v1/warehouses [32m200[0m 6.995 ms - 220[0m
+2026-09-19 23:03:00 [33mwarn[39m: AppError 401: Credenciales inválidas
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/login [33m401[0m 103.968 ms - 65[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 102.196 ms - 213[0m
+2026-09-19 23:03:00 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 106.333 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 105.813 ms - 197[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 401: Credenciales inválidas
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [33m401[0m 4.879 ms - 65[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 112.411 ms - 27[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 113.744 ms - 27[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 14.038 ms - 465[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 5.146 ms - 208[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mGET /api/v1/warehouses/6aaf5af521202d4c75abf0cf [32m200[0m 3.480 ms - 208[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 117.738 ms - 197[0m
+2026-09-19 23:03:01 [33mwarn[39m: Validation Error: password
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [33m400[0m 0.998 ms - 143[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 401: No autenticado: falta el token de acceso
+2026-09-19 23:03:01 [32mhttp[39m: [0mGET /api/v1/auth/me [33m401[0m 1.077 ms - 82[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 107.828 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 104.347 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 104.114 ms - 197[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 107.459 ms - 27[0m
+2026-09-19 23:03:01 [33mwarn[39m: Validation Error: sku, name, category, price, location, warehouse
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/inventory-items [33m400[0m 1.683 ms - 543[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 107.465 ms - 27[0m
+2026-09-19 23:03:01 [33mwarn[39m: Validation Error: id
+2026-09-19 23:03:01 [32mhttp[39m: [0mGET /api/v1/warehouses/no-es-un-id [33m400[0m 3.341 ms - 178[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 108.117 ms - 27[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mGET /api/v1/auth/me [32m200[0m 4.375 ms - 197[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 109.388 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 103.330 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 102.690 ms - 197[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 107.707 ms - 27[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 105.568 ms - 27[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 404: La bodega 64b000000000000000000000 no existe
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/inventory-items [33m404[0m 3.606 ms - 86[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 404: La bodega 64b000000000000000000000 no existe
+2026-09-19 23:03:01 [32mhttp[39m: [0mGET /api/v1/warehouses/64b000000000000000000000 [33m404[0m 3.815 ms - 86[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 107.597 ms - 27[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 404: El usuario autenticado ya no existe
+2026-09-19 23:03:01 [32mhttp[39m: [0mGET /api/v1/auth/me [33m404[0m 2.612 ms - 77[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 105.708 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 104.669 ms - 213[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 110.973 ms - 197[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 118.690 ms - 27[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 121.754 ms - 27[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 403: Acceso denegado: se requiere el rol admin
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/warehouses [33m403[0m 1.787 ms - 83[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 10.484 ms - 465[0m
+2026-09-19 23:03:01 [33mwarn[39m: AppError 409: Ya existe un ítem de inventario con el sku "PKG-0001"
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/inventory-items [33m409[0m 9.720 ms - 98[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 124.791 ms - 27[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/refresh [32m200[0m 11.793 ms - 30[0m
+2026-09-19 23:03:01 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 131.314 ms - 213[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 127.887 ms - 213[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 114.581 ms - 197[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 107.239 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 2.821 ms - 208[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 105.110 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 6.793 ms - 465[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mGET /api/v1/inventory-items/6aaf5af60c9d985e142619c2 [32m200[0m 4.756 ms - 465[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 111.331 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/refresh [32m200[0m 4.480 ms - 30[0m
+2026-09-19 23:03:02 [33mwarn[39m: AppError 401: Refresh token no coincide con la sesión activa
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/refresh [33m401[0m 3.919 ms - 89[0m
+2026-09-19 23:03:02 [33mwarn[39m: AppError 401: No hay refresh token en la petición
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/refresh [33m401[0m 0.984 ms - 78[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 107.694 ms - 213[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 108.017 ms - 213[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 108.373 ms - 197[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 115.079 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 3.292 ms - 208[0m
+2026-09-19 23:03:02 [33mwarn[39m: AppError 409: Ya existe una bodega con el código "BOG-01"
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/warehouses [33m409[0m 6.637 ms - 88[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 120.745 ms - 27[0m
+2026-09-19 23:03:02 [33mwarn[39m: Validation Error: id
+2026-09-19 23:03:02 [32mhttp[39m: [0mGET /api/v1/inventory-items/no-es-un-id [33m400[0m 1.794 ms - 178[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 117.515 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/logout [32m200[0m 3.455 ms - 29[0m
+2026-09-19 23:03:02 [33mwarn[39m: AppError 401: No hay refresh token en la petición
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/refresh [33m401[0m 0.849 ms - 78[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 111.490 ms - 213[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 109.272 ms - 213[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 107.744 ms - 27[0m
+2026-09-19 23:03:02 [33mwarn[39m: Validation Error: code
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/warehouses [33m400[0m 1.786 ms - 163[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 111.771 ms - 27[0m
+PASS src/__tests__/auth.routes.test.ts (51.472 s)
+  POST /api/v1/auth/register
+    √ 201 — crea la cuenta y nunca devuelve el password (404 ms)
+    √ 409 — email ya registrado (188 ms)
+    √ 400 — password sin mayúscula ni número (27 ms)
+  POST /api/v1/auth/login
+    √ 200 — credenciales válidas, cookies HttpOnly en la respuesta (365 ms)
+    √ 401 — password incorrecto (261 ms)
+    √ 401 — email no existe, mismo mensaje que password incorrecto (previene user enumeration) (129 ms)
+    √ 400 — body inválido (sin password) (133 ms)
+  GET /api/v1/auth/me
+    √ 401 — sin cookie (10 ms)
+    √ 200 — con la cookie de sesión (238 ms)
+    √ 404 — el token es válido pero el usuario ya no existe en la base (234 ms)
+  POST /api/v1/auth/refresh
+    √ 200 — rota el par de tokens (279 ms)
+    √ 401 — reusar un refresh token ya rotado invalida la sesión (259 ms)
+    √ 401 — sin refresh token (11 ms)
+  POST /api/v1/auth/logout
+    √ 200 — invalida la sesión; un refresh posterior da 401 (255 ms)
+2026-09-19 23:03:02 [33mwarn[39m: AppError 404: El ítem de inventario 64b000000000000000000000 no existe
+2026-09-19 23:03:02 [32mhttp[39m: [0mGET /api/v1/inventory-items/64b000000000000000000000 [33m404[0m 4.038 ms - 99[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 96.979 ms - 214[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 92.932 ms - 214[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 94.905 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 2.179 ms - 208[0m
+(node:46236) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+2026-09-19 23:03:02 [32mhttp[39m: [0mPUT /api/v1/warehouses/6aaf5af621202d4c75abf0da [32m200[0m 4.758 ms - 210[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 94.439 ms - 27[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 7.609 ms - 465[0m
+(node:102836) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+2026-09-19 23:03:02 [32mhttp[39m: [0mPUT /api/v1/inventory-items/6aaf5af60c9d985e142619c7 [32m200[0m 8.855 ms - 464[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 90.817 ms - 214[0m
+2026-09-19 23:03:02 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 91.066 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 91.722 ms - 27[0m
+2026-09-19 23:03:03 [33mwarn[39m: Validation Error: id
+2026-09-19 23:03:03 [32mhttp[39m: [0mPUT /api/v1/warehouses/no-es-un-id [33m400[0m 2.047 ms - 178[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 93.099 ms - 27[0m
+(node:102836) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+2026-09-19 23:03:03 [33mwarn[39m: AppError 404: El ítem de inventario 64b000000000000000000000 no existe
+2026-09-19 23:03:03 [32mhttp[39m: [0mPUT /api/v1/inventory-items/64b000000000000000000000 [33m404[0m 3.956 ms - 99[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 94.247 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 93.362 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 89.921 ms - 27[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 3.162 ms - 208[0m
+2026-09-19 23:03:03 [33mwarn[39m: Validation Error: code
+2026-09-19 23:03:03 [32mhttp[39m: [0mPUT /api/v1/warehouses/6aaf5af721202d4c75abf0dd [33m400[0m 1.313 ms - 163[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 100.140 ms - 27[0m
+2026-09-19 23:03:03 [33mwarn[39m: Validation Error: id
+2026-09-19 23:03:03 [32mhttp[39m: [0mPUT /api/v1/inventory-items/no-es-un-id [33m400[0m 1.195 ms - 178[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 138.220 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 224.835 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 271.530 ms - 27[0m
+(node:46236) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+2026-09-19 23:03:03 [33mwarn[39m: AppError 404: La bodega 64b000000000000000000000 no existe
+2026-09-19 23:03:03 [32mhttp[39m: [0mPUT /api/v1/warehouses/64b000000000000000000000 [33m404[0m 4.328 ms - 86[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 227.643 ms - 27[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 10.996 ms - 465[0m
+2026-09-19 23:03:03 [33mwarn[39m: Validation Error: category
+2026-09-19 23:03:03 [32mhttp[39m: [0mPUT /api/v1/inventory-items/6aaf5af70c9d985e142619cc [33m400[0m 1.097 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 112.806 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 104.063 ms - 214[0m
+2026-09-19 23:03:03 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 104.730 ms - 27[0m
+2026-09-19 23:03:03 [33mwarn[39m: Validation Error: id
+2026-09-19 23:03:03 [32mhttp[39m: [0mDELETE /api/v1/warehouses/no-es-un-id [33m400[0m 2.315 ms - 178[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 121.174 ms - 27[0m
+2026-09-19 23:03:04 [33mwarn[39m: Validation Error: id
+2026-09-19 23:03:04 [32mhttp[39m: [0mDELETE /api/v1/inventory-items/no-es-un-id [33m400[0m 1.927 ms - 178[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 117.461 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 125.646 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 127.173 ms - 27[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 3.027 ms - 208[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 33.026 ms - 465[0m
+2026-09-19 23:03:04 [33mwarn[39m: AppError 409: No se puede eliminar la bodega: todavía tiene ítems de inventario asociados
+2026-09-19 23:03:04 [32mhttp[39m: [0mDELETE /api/v1/warehouses/6aaf5af821202d4c75abf0e1 [33m409[0m 8.894 ms - 119[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 128.896 ms - 27[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 13.502 ms - 465[0m
+2026-09-19 23:03:04 [33mwarn[39m: AppError 403: Acceso denegado: se requiere el rol admin
+2026-09-19 23:03:04 [32mhttp[39m: [0mDELETE /api/v1/inventory-items/6aaf5af80c9d985e142619d0 [33m403[0m 1.583 ms - 83[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 122.054 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 102.974 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 93.043 ms - 27[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 2.708 ms - 208[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mDELETE /api/v1/warehouses/6aaf5af821202d4c75abf0e4 [32m204[0m 5.047 ms - -[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 95.361 ms - 27[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 8.546 ms - 465[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 91.874 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 94.625 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 97.311 ms - 27[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/warehouses [32m201[0m 3.894 ms - 208[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 99.713 ms - 27[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mDELETE /api/v1/inventory-items/6aaf5af80c9d985e142619d3 [32m204[0m 5.085 ms - -[0m
+2026-09-19 23:03:04 [33mwarn[39m: AppError 404: El ítem de inventario 6aaf5af80c9d985e142619d3 no existe
+2026-09-19 23:03:04 [32mhttp[39m: [0mGET /api/v1/inventory-items/6aaf5af80c9d985e142619d3 [33m404[0m 3.099 ms - 99[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 98.750 ms - 214[0m
+2026-09-19 23:03:04 [32mhttp[39m: [0mPOST /api/v1/auth/register [32m201[0m 102.853 ms - 214[0m
+2026-09-19 23:03:05 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 102.121 ms - 27[0m
+2026-09-19 23:03:05 [33mwarn[39m: AppError 403: Acceso denegado: se requiere el rol admin
+2026-09-19 23:03:05 [32mhttp[39m: [0mDELETE /api/v1/warehouses/6aaf5af821202d4c75abf0e6 [33m403[0m 2.366 ms - 83[0m
+2026-09-19 23:03:05 [32mhttp[39m: [0mPOST /api/v1/auth/login [32m200[0m 109.773 ms - 27[0m
+2026-09-19 23:03:05 [32mhttp[39m: [0mPOST /api/v1/inventory-items [32m201[0m 8.869 ms - 465[0m
+2026-09-19 23:03:05 [33mwarn[39m: AppError 401: No autenticado: falta el token de acceso
+2026-09-19 23:03:05 [32mhttp[39m: [0mDELETE /api/v1/inventory-items/6aaf5af90c9d985e142619d7 [33m401[0m 1.258 ms - 82[0m
+PASS src/__tests__/warehouses.routes.test.ts (54.361 s)
+  GET /api/v1/warehouses
+    √ 401 — sin sesión (151 ms)
+    √ 200 — cualquier sesión puede listar (operator incluido) (917 ms)
+  GET /api/v1/warehouses/:id
+    √ 200 — devuelve la bodega existente (268 ms)
+    √ 400 — id que no es un ObjectId válido (241 ms)
+    √ 404 — ObjectId válido pero inexistente (235 ms)
+  POST /api/v1/warehouses — RBAC
+    √ 403 — un operator no puede crear bodegas (248 ms)
+    √ 201 — un admin sí puede crear bodegas (270 ms)
+    √ 409 — code duplicado (264 ms)
+    √ 400 — code con formato inválido (Zod) (245 ms)
+  PUT /api/v1/warehouses/:id
+    √ 200 — actualización parcial (solo admin) (227 ms)
+    √ 400 — id inválido (208 ms)
+    √ 400 — body inválido (216 ms)
+    √ 404 — id inexistente (462 ms)
+  DELETE /api/v1/warehouses/:id
+    √ 400 — id inválido (250 ms)
+    √ 409 — no se puede eliminar una bodega con ítems asociados (335 ms)
+    √ 204 — elimina una bodega sin ítems (251 ms)
+    √ 403 — un operator no puede eliminar bodegas (438 ms)
+PASS src/__tests__/inventory-items.routes.test.ts (54.383 s)
+  GET /api/v1/inventory-items
+    √ 401 — sin cookie de sesión (173 ms)
+    √ 200 — lista paginada con la bodega populada, estando autenticado (628 ms)
+    √ 400 — limit fuera de rango (Zod) (356 ms)
+  POST /api/v1/inventory-items
+    √ 201 — crea el ítem con datos válidos (261 ms)
+    √ 400 — datos inválidos (Zod) (244 ms)
+    √ 404 — la bodega referenciada no existe (aunque el ObjectId sea válido) (243 ms)
+    √ 409 — sku duplicado (índice único 11000 traducido) (283 ms)
+  GET /api/v1/inventory-items/:id
+    √ 200 — devuelve el ítem existente (276 ms)
+    √ 400 — id que no es un ObjectId válido (255 ms)
+    √ 404 — ObjectId válido pero inexistente (247 ms)
+  PUT /api/v1/inventory-items/:id
+    √ 200 — actualización parcial (235 ms)
+    √ 404 — id inexistente (209 ms)
+    √ 400 — id inválido (222 ms)
+    √ 400 — body inválido (category fuera del enum) (500 ms)
+  DELETE /api/v1/inventory-items/:id — RBAC
+    √ 400 — id inválido (con sesión de admin) (255 ms)
+    √ 403 — un operator no puede eliminar (305 ms)
+    √ 204 — un admin sí puede eliminar (459 ms)
+    √ 401 — sin sesión (258 ms)
+Test Suites: 9 passed, 9 total
+Tests:       94 passed, 94 total
+Snapshots:   0 total
+Time:        57.705 s
