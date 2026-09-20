@@ -1,0 +1,10 @@
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 65
+ETag: W/"41-ryXBADHjwIl6URKZqfZVVnXsRko"
+Date: Sun, 20 Sep 2026 03:10:54 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Application Error","message":"Credenciales inválidas"}

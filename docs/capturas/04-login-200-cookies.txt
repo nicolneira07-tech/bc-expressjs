@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Set-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YWFmNGViMzgzMDIzZTNkMmZjNmMxYjMiLCJlbWFpbCI6Im9wZXJhZG9yQGFsbWFjZW4uY29tIiwicm9sZSI6Im9wZXJhdG9yIiwiaWF0IjoxNzg5ODczODU0LCJleHAiOjE3ODk4NzQ3NTR9.8bl0EElTdWOylmgRikOMESsSsJ6cwgo6XMT7llkJqaw; Max-Age=900; Path=/; Expires=Sun, 20 Sep 2026 03:25:54 GMT; HttpOnly; SameSite=Lax
+Set-Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YWFmNGViMzgzMDIzZTNkMmZjNmMxYjMiLCJpYXQiOjE3ODk4NzM4NTQsImV4cCI6MTc5MDQ3ODY1NH0.v5cdDg-Jh-VhRzsFvLlQsQNG3nb587VhPb65XS_N-xM; Max-Age=604800; Path=/api/v1/auth; Expires=Sun, 27 Sep 2026 03:10:54 GMT; HttpOnly; SameSite=Lax
+Content-Type: application/json; charset=utf-8
+Content-Length: 27
+ETag: W/"1b-HDQQmrGN/nfCQ82MxuV1q7iwJWI"
+Date: Sun, 20 Sep 2026 03:10:54 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"message":"Login exitoso"}

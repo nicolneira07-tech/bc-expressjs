@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 60
+ETag: W/"3c-imzfUY56Awx5IpZZ70wOYa06Dpg"
+Date: Sun, 20 Sep 2026 03:11:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"status":"ok","week":"07","project":"api-jwt-auth-almacen"}

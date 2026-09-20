@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 950
+ETag: W/"3b6-q34YYe+o65YnFh15ay8GUJiBA8E"
+Date: Sun, 20 Sep 2026 03:11:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"6aaf4eb483023e3d2fc6c1b9","sku":"SPA-0001","name":"Rodamiento industrial 6205","category":"spare-parts","price":12.75,"stock":200,"location":"C-10","active":true,"warehouse":{"id":"6aaf4eb383023e3d2fc6c1b5","code":"BOG-01","name":"Centro de distribución Bogotá","city":"Bogotá","active":true,"createdAt":"2026-09-20T03:10:43.999Z","updatedAt":"2026-09-20T03:10:43.999Z"},"createdAt":"2026-09-20T03:10:44.009Z","updatedAt":"2026-09-20T03:10:44.009Z"},{"id":"6aaf4eb483023e3d2fc6c1ba","sku":"SAF-0001","name":"Casco de seguridad","category":"safety-equipment","price":15.5,"stock":80,"location":"D-01","active":true,"warehouse":{"id":"6aaf4eb383023e3d2fc6c1b6","code":"MED-01","name":"Bodega regional Medellín","city":"Medellín","active":true,"createdAt":"2026-09-20T03:10:44.000Z","updatedAt":"2026-09-20T03:10:44.000Z"},"createdAt":"2026-09-20T03:10:44.009Z","updatedAt":"2026-09-20T03:10:44.009Z"}],"total":6,"page":1,"limit":2}

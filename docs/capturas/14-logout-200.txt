@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Set-Cookie: accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: refreshToken=; Path=/api/v1/auth; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 29
+ETag: W/"1d-03ZMLpNqeI38Z0/H8+1Qxp6X/Xg"
+Date: Sun, 20 Sep 2026 03:11:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"message":"Sesión cerrada"}

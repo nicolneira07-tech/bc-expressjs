@@ -18,3 +18,6 @@ Thumbs.db
 
 # Notas personales de estudio (no son parte de la entrega)
 APUNTES-SEMANA-*.md
+
+# Logs de Winston en produccion
+logs/

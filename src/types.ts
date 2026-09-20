@@ -1,33 +1,73 @@
 // ============================================
-// TIPOS — Dominio: Logística / Almacén
+// TYPES — Dominio: Logística / Almacén
 // ============================================
-// Recurso principal: InventoryItem (ítem de inventario de almacén)
+// Con Mongoose las entidades ya no las genera un cliente aparte (como el
+// `@prisma/client` de la semana 05): los `interface I*` viven junto a cada
+// modelo (`models/*.model.ts`). Aquí solo quedan las "vistas" que expone la
+// API (con `id: string` en vez de `_id: ObjectId`) y los contratos de
+// respuesta, que no cambian de una semana a otra.
 
-export interface InventoryItem {
+export interface WarehouseView {
   id: string;
+  code: string;
+  name: string;
+  city: string;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InventoryItemView {
+  id: string;
+  sku: string;
   name: string;
   category: string;
   price: number;
   stock: number;
   location: string;
   active: boolean;
+  // Sin popular viaja el ObjectId como string; poblado, el objeto completo.
+  warehouse: string | WarehouseView;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// Resumen que el procesador debe calcular
-export interface InventoryItemSummary {
+export interface UserView {
+  id: string;
+  email: string;
+  name: string;
+  role: 'operator' | 'admin';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Contratos de respuesta (genéricos, no se adaptan al dominio)
+export interface SingleResponse<T> {
+  data: T;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
   total: number;
-  active: number;
-  inactive: number;
-  averagePrice: number;
-  mostExpensive: InventoryItem;
-  cheapest: InventoryItem;
-  categories: string[];
+  page: number;
+  limit: number;
 }
 
-// Reporte final que se escribirá en output/report.json
-export interface Report {
-  generatedAt: string;
-  appliedFilter: string | null;
-  summary: InventoryItemSummary;
-  items: InventoryItem[];
+// Respuesta de error de validación (ZodError → 400)
+export interface ValidationErrorResponse {
+  error: string;
+  message: string;
+  issues: Array<{ field: string; message: string }>;
+}
+
+// Respuesta de error genérica (AppError → statusCode, Error → 500)
+export interface ErrorResponse {
+  error: string;
+  message: string;
+  stack?: string;
+}
+
+export interface PaginationParams {
+  page: number;
+  limit: number;
 }
