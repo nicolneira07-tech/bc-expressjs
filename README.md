@@ -15,7 +15,74 @@ Cada semana se entrega en su propia rama `week-<NN>`.
 | 05 | [`week-05`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-05) | PostgreSQL + Prisma ORM |
 | 06 | [`week-06`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-06) | MongoDB + Mongoose |
 | 07 | [`week-07`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-07) | Autenticación JWT |
-| 08 | `week-08` | Autorización (RBAC) y seguridad |
+| 08 | [`week-08`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-08) | Autorización (RBAC) y seguridad |
+| 09 | `week-09` | Testing (Jest + Supertest) |
+
+---
+
+## Semana 09 — Testing con Jest y Supertest
+
+Sobre la API de las semanas 07-08 (auth + RBAC + seguridad) se agrega una
+suite de tests: **94 tests en 9 archivos**, sin tocar el código de negocio
+salvo dos bugs reales que la propia suite encontró (ver
+[`docs/capturas/README.md`](docs/capturas/README.md)).
+
+### Cobertura
+
+```
+pnpm test:coverage
+
+All files   | % Stmts 95.29 | % Branch 83.52 | % Funcs 97.59 | % Lines 95.27
+```
+
+Umbral configurado en `jest.config.ts` (`statements`/`functions`/`lines` 80%,
+`branches` 70%) — los cuatro números lo superan.
+
+### Unit vs. integración, en este proyecto
+
+| | Unit | Integración |
+|---|---|---|
+| Qué prueba | La lógica de un `service`, aislada | Rutas HTTP completas, de punta a punta |
+| Cómo | `jest.mock()` sobre el `repository` | `Supertest` + `mongodb-memory-server` (Mongo real, en memoria) |
+| Archivos | `*.service.test.ts`, `requireRole.test.ts`, `sanitize.test.ts` | `*.routes.test.ts`, `security.routes.test.ts` |
+| Ejemplo de lo que cubre | "si la bodega no existe, `create()` lanza 404 sin llegar a crear el ítem" | "un `operator` recibe 403 al hacer `DELETE`; un `admin` recibe 204" |
+
+### Infraestructura de test
+
+- **`jest.config.ts`** — `ts-jest`, `testEnvironment: node`, umbrales de
+  cobertura, excluye `server.ts`/`seed.ts`/`lib/mongoose.ts` (bootstrapping,
+  no lógica) del reporte.
+- **`jest.setup.ts`** — fija `JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET` de
+  prueba antes de que se importe cualquier módulo.
+- **`src/__tests__/helpers/db.ts`** — `connectTestDB`/`clearTestDB`/
+  `disconnectTestDB` sobre `mongodb-memory-server`. Cada archivo de
+  integración levanta su propio `mongod`, sin Docker.
+- **`src/__tests__/helpers/auth.ts`** — `createAuthenticatedAgent(app, role)`:
+  registra, sube el rol directo en la base si hace falta `admin` (el
+  registro público nunca lo permite — semana 07) e inicia sesión con un
+  `supertest.agent` que reenvía las cookies solo, como un navegador.
+
+### Dos bugs que encontró la propia suite (no una revisión de código)
+
+1. **Rotación de refresh tokens, otra vez.** El fix de la semana 07
+   (SHA-256 en vez de bcrypt) no fue suficiente: dos refresh tokens del
+   mismo usuario firmados en el mismo segundo son el mismo string (JWT +
+   HMAC son deterministas). Se agregó un `jti` aleatorio a cada refresh
+   token (`utils/jwt.ts`).
+2. **El rate limiter de auth bloqueaba los propios tests** — la suite crea
+   decenas de sesiones por archivo. Los limiters ahora se saltan (`skip`)
+   bajo `NODE_ENV=test`; el comportamiento en producción no cambia.
+
+Detalle completo, con el código exacto del fix: `docs/capturas/README.md`.
+
+### Cómo correr los tests
+
+```bash
+pnpm install
+pnpm test              # 94 tests, ~1 min — no necesita Docker ni Mongo corriendo
+pnpm test:watch        # modo watch
+pnpm test:coverage     # + reporte HTML en coverage/index.html
+```
 
 ---
 

@@ -1,0 +1,47 @@
+File                            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s      
+--------------------------------|---------|----------|---------|---------|------------------------
+All files                       |   95.29 |    83.52 |   97.59 |   95.27 |                        
+ src                            |     100 |      100 |     100 |     100 |                        
+  app.ts                        |     100 |      100 |     100 |     100 |                        
+ src/config                     |     100 |      100 |     100 |     100 |                        
+  security.ts                   |     100 |      100 |     100 |     100 |                        
+ src/controllers                |   97.45 |      100 |     100 |   97.45 |                        
+  auth.controller.ts            |   98.07 |      100 |     100 |   98.07 | 103                    
+  inventory-items.controller.ts |   96.29 |      100 |     100 |   96.29 | 29,98                  
+  warehouses.controller.ts      |   98.03 |      100 |     100 |   98.03 | 16                     
+ src/errors                     |   88.88 |      100 |      50 |   88.88 |                        
+  AppError.ts                   |   88.88 |      100 |      50 |   88.88 | 29                     
+ src/middlewares                |   98.33 |    86.36 |     100 |    98.3 |                        
+  auth.middleware.ts            |    90.9 |      100 |     100 |    90.9 | 25                     
+  errorHandler.ts               |     100 |       70 |     100 |     100 | 54-60                  
+  notFound.ts                   |     100 |      100 |     100 |     100 |                        
+  requireRole.ts                |     100 |      100 |     100 |     100 |                        
+  sanitize.ts                   |     100 |      100 |     100 |     100 |                        
+ src/models                     |     100 |      100 |     100 |     100 |                        
+  inventory-item.model.ts       |     100 |      100 |     100 |     100 |                        
+  user.model.ts                 |     100 |      100 |     100 |     100 |                        
+  warehouse.model.ts            |     100 |      100 |     100 |     100 |                        
+ src/repositories               |   82.35 |    66.66 |   96.15 |   82.35 |                        
+  inventory-items.repository.ts |   83.72 |    69.23 |     100 |   83.72 | 91,116,129,132,148-151 
+  users.repository.ts           |    82.6 |       50 |    87.5 |    82.6 | 54-57,66               
+  warehouses.repository.ts      |   80.55 |    77.77 |     100 |   80.55 | 42,64,77,80,88-91      
+ src/routes                     |     100 |      100 |     100 |     100 |                        
+  auth.routes.ts                |     100 |      100 |     100 |     100 |                        
+  inventory-items.routes.ts     |     100 |      100 |     100 |     100 |                        
+  warehouses.routes.ts          |     100 |      100 |     100 |     100 |                        
+ src/schemas                    |     100 |      100 |     100 |     100 |                        
+  auth.schema.ts                |     100 |      100 |     100 |     100 |                        
+  inventory-item.schema.ts      |     100 |      100 |     100 |     100 |                        
+  warehouse.schema.ts           |     100 |      100 |     100 |     100 |                        
+ src/services                   |     100 |      100 |     100 |     100 |                        
+  auth.service.ts               |     100 |      100 |     100 |     100 |                        
+  inventory-items.service.ts    |     100 |      100 |     100 |     100 |                        
+  warehouses.service.ts         |     100 |      100 |     100 |     100 |                        
+ src/utils                      |   93.33 |        0 |     100 |   93.33 |                        
+  jwt.ts                        |   93.33 |        0 |     100 |   93.33 | 22                     
+--------------------------------|---------|----------|---------|---------|------------------------
+
+Test Suites: 9 passed, 9 total
+Tests:       94 passed, 94 total
+Snapshots:   0 total
+Time:        46.917 s, estimated 66 s

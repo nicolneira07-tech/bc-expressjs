@@ -7,6 +7,7 @@
 // Refresh token: 7 días (solo viaja a /api/v1/auth/refresh, con rotación).
 
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 import { AppError } from '../errors/AppError';
 
 export interface JwtPayload {
@@ -32,7 +33,16 @@ export function verifyAccessToken(token: string): JwtPayload {
 }
 
 export function signRefreshToken(payload: Pick<JwtPayload, 'sub'>): string {
-  return jwt.sign(payload, getSecret('JWT_REFRESH_SECRET'), { expiresIn: '7d' });
+  // `jti` (JWT ID) aleatorio: sin él, dos refresh tokens del mismo usuario
+  // firmados dentro del mismo segundo (`iat` solo tiene resolución de
+  // segundos) son BYTE-IDÉNTICOS — HMAC-SHA256 es determinista, así que
+  // mismo payload + mismo secreto = misma firma. Eso rompía la rotación
+  // bajo carga (dos refresh casi simultáneos) y hacía imposible testear la
+  // rotación sin esperar un segundo real entre llamadas. `jti` garantiza que
+  // cada token emitido es único sin importar cuándo se firme.
+  return jwt.sign({ ...payload, jti: randomUUID() }, getSecret('JWT_REFRESH_SECRET'), {
+    expiresIn: '7d',
+  });
 }
 
 export function verifyRefreshToken(token: string): Pick<JwtPayload, 'sub'> {

@@ -8,11 +8,22 @@
 import rateLimit from 'express-rate-limit';
 import { CorsOptions } from 'cors';
 
+// En tests, la suite de integración crea decenas de usuarios/logins por
+// archivo (cada `createAuthenticatedAgent` registra + inicia sesión) — con
+// el límite de producción activo, el segundo `describe` ya recibiría `429`
+// en vez de las respuestas que el test quiere verificar. `skip` deja pasar
+// sin contar SOLO bajo `NODE_ENV=test` (`jest.setup.ts` lo fija); el
+// comportamiento en dev/producción no cambia. El rate limiting en sí ya
+// tiene su propia evidencia real en `docs/capturas/16-auth-rate-limit-429.txt`
+// (semana 08) — no hace falta volver a probarlo aquí con reloj real.
+const isTestEnv = (): boolean => process.env['NODE_ENV'] === 'test';
+
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 100,
   standardHeaders: 'draft-7', // headers RateLimit-* en vez de los X-RateLimit-* obsoletos
   legacyHeaders: false,
+  skip: isTestEnv,
   message: { error: 'Demasiadas peticiones, intenta de nuevo más tarde' },
 });
 
@@ -21,6 +32,7 @@ export const authLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skip: isTestEnv,
   message: { error: 'Demasiados intentos de autenticación, intenta de nuevo más tarde' },
 });
 

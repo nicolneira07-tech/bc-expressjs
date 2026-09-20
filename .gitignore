@@ -21,3 +21,6 @@ APUNTES-SEMANA-*.md
 
 # Logs de Winston en produccion
 logs/
+
+# Reporte de cobertura de Jest (se regenera con pnpm test:coverage)
+coverage/

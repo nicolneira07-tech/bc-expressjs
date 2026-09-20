@@ -1,103 +1,98 @@
-# Capturas — Semana 08
+# Capturas — Semana 09
 
-Evidencias pedidas por la rúbrica de la semana 08 (RBAC + capas de
-seguridad). Todas se tomaron contra `http://localhost:3000` con MongoDB
-levantado, la base sembrada (`pnpm db:seed`) y el servidor corriendo
-(`pnpm dev`). La salida completa de cada `curl -i` está en el `.txt`
-correspondiente.
+Evidencia pedida por la rúbrica de la semana 09 (testing con Jest +
+Supertest). A diferencia de semanas anteriores, acá lo que se "captura" no
+son peticiones `curl` sino la salida de los comandos de test — es la
+evidencia que de verdad importa para esta semana.
 
-| # | Archivo | Caso | Esperado |
+| # | Archivo | Comando | Qué muestra |
 |---|---|---|---|
-| 01 | `01-health-headers-helmet.txt` | `GET /health` | `200` + cabeceras de Helmet (`Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options`, etc.) y `RateLimit-*` |
-| 02 | `02-register-201.txt` | `POST /auth/register` | `201` |
-| 03 | `03-register-duplicado-409.txt` | `POST /auth/register` con email repetido | `409` |
-| 04 | `04-nosql-injection-login-400.txt` | `POST /auth/login` con `{"email":{"$gt":""},"password":{"$gt":""}}` | `400` — `sanitizeBody` limpia los operadores `$gt`, y Zod rechaza lo que queda |
-| 05 | `05-login-operator-200.txt` | Login con `operador@almacen.com` | `200` + cookie de sesión con `role: "operator"` |
-| 06 | `06-login-admin-200.txt` | Login con `admin@almacen.com` | `200` + cookie de sesión con `role: "admin"` |
-| 07 | `07-inventory-sin-token-401.txt` | `GET /api/v1/inventory-items` sin cookie | `401` |
-| 08 | `08-inventory-delete-operator-403.txt` | `DELETE /inventory-items/:id` con sesión de `operator` | `403` — RBAC: borrar es solo de `admin` |
-| 09 | `09-inventory-delete-admin-204.txt` | Mismo `DELETE` con sesión de `admin` | `204` |
-| 10 | `10-warehouse-post-operator-403.txt` | `POST /api/v1/warehouses` con sesión de `operator` | `403` |
-| 11 | `11-warehouse-post-admin-201.txt` | Mismo `POST` con sesión de `admin` | `201` |
-| 12 | `12-cors-origen-no-permitido.txt` | Request con `Origin: http://evil-site.com` | Bloqueado — el paquete `cors` corta la petición antes del handler |
-| 13 | `13-cors-origen-permitido.txt` | Request con `Origin: http://localhost:5173` (en la whitelist) | `Access-Control-Allow-Origin` presente en la respuesta |
-| 14 | `14-ruta-inexistente-404.txt` | `GET /api/v1/no-existe` | `404` JSON |
-| 15 | `15-build.txt` | `pnpm build` | Sin errores de TypeScript |
-| 16 | `16-auth-rate-limit-429.txt` | 6º intento de login en la ventana de 15 min (`authLimiter`, `limit: 5`) | `429` + header `Retry-After` |
-| 17 | `17-seed.txt` | `pnpm db:seed` | 2 usuarios + 2 bodegas + 6 ítems, sin errores |
+| 01 | `01-test-run.txt` | `pnpm test --verbose` | Los 94 tests, uno por uno, con su nombre y el tiempo — 9 suites, todas en verde |
+| 02 | `02-coverage-summary.txt` | `pnpm test:coverage` | Tabla de cobertura por archivo — el resumen que compara contra el umbral de `jest.config.ts` |
+| 03 | `03-build.txt` | `pnpm build` | `tsc` sin errores — los `.test.ts` quedan excluidos del build de producción (`tsconfig.json`) |
 
-## Dos decisiones que no salieron del starter tal cual
+## Resultado
 
-**`express-mongo-sanitize` no funciona con Express 5.** Es la librería que
-recomienda el material de la semana para mitigar NoSQL injection, pero
-intenta reasignar `req.query` completo — y en Express 5 `req.query` es un
-getter sin setter (se parsea on-demand). Con esa librería instalada,
-**cualquier** petición (maliciosa o no) revienta con `500`
-(`Cannot set property query of ... which has only a getter`), comprobado
-localmente antes de descartarla. La solución fue un middleware propio,
-`src/middlewares/sanitize.ts`, que solo muta `req.body` (sí es escribible en
-Express 5) y elimina recursivamente cualquier clave que empiece con `$` o
-contenga `.`. El caso **04** de esta tabla prueba que funciona: el operador
-`$gt` desaparece y lo que le llega a Zod (`{}`) no pasa la validación de
-`email`/`password` como string.
-
-**`authLimiter` solo en `/register` y `/login`, no en todo `/auth`.** La
-primera versión montaba el limiter sobre el router completo
-(`app.use('/api/v1/auth', authLimiter, authRouter)`), lo que también
-limitaba `/me`, `/refresh` y `/logout` a 5 peticiones cada 15 minutos —
-demasiado agresivo para rutas que ya están detrás de una sesión válida y no
-son el objetivo típico de fuerza bruta. Se movió el limiter a las dos rutas
-públicas de `auth.routes.ts` (`authLimiter` como segundo argumento de
-`.post('/register', ...)` y `.post('/login', ...)`), dejando el resto bajo
-el límite global (100 req / 15 min).
-
-## Reproducir las capturas
-
-```bash
-docker compose up -d
-pnpm install
-cp .env.example .env
-pnpm db:seed     # 17 — operador@almacen.com/Operador123, admin@almacen.com/Admin1234
-pnpm build       # 15
-pnpm dev
-
-curl -i http://localhost:3000/health                                            # 01
-
-curl -i -X POST http://localhost:3000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"nuevo.operador@almacen.com","password":"Clave1234","name":"Nuevo Operador"}'   # 02, repetir → 03
-
-curl -i -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" -d '{"email":{"$gt":""},"password":{"$gt":""}}'          # 04
-
-CJ_OP=cj-op.txt; CJ_ADMIN=cj-admin.txt
-curl -i -c "$CJ_OP" -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" -d '{"email":"operador@almacen.com","password":"Operador123"}'   # 05
-curl -i -c "$CJ_ADMIN" -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" -d '{"email":"admin@almacen.com","password":"Admin1234"}'        # 06
-
-curl -i http://localhost:3000/api/v1/inventory-items                                            # 07
-
-ITEM=$(curl -s -b "$CJ_OP" "http://localhost:3000/api/v1/inventory-items?limit=1" | jq -r '.data[0].id')
-curl -i -b "$CJ_OP" -X DELETE "http://localhost:3000/api/v1/inventory-items/$ITEM"                # 08 → 403
-curl -i -b "$CJ_ADMIN" -X DELETE "http://localhost:3000/api/v1/inventory-items/$ITEM"              # 09 → 204
-
-curl -i -b "$CJ_OP" -X POST http://localhost:3000/api/v1/warehouses \
-  -H "Content-Type: application/json" -d '{"code":"CAL-01","name":"Bodega Cali","city":"Cali"}'    # 10 → 403
-curl -i -b "$CJ_ADMIN" -X POST http://localhost:3000/api/v1/warehouses \
-  -H "Content-Type: application/json" -d '{"code":"CAL-01","name":"Bodega Cali","city":"Cali"}'    # 11 → 201
-
-curl -i -H "Origin: http://evil-site.com" http://localhost:3000/health                            # 12
-curl -i -H "Origin: http://localhost:5173" http://localhost:3000/health                           # 13
-
-curl -i http://localhost:3000/api/v1/no-existe                                                    # 14
-
-for i in 1 2 3 4 5 6; do
-  curl -s -i -X POST http://localhost:3000/api/v1/auth/login \
-    -H "Content-Type: application/json" -d '{"email":"nadie@almacen.com","password":"x"}' | head -1
-done   # el 6º es 429                                                                              # 16
+```
+Test Suites: 9 passed, 9 total
+Tests:       94 passed, 94 total
 ```
 
-> **En PowerShell**, `curl` es un alias de `Invoke-WebRequest` y rompe las
-> comillas del JSON. Usa `curl.exe` y pasa el body desde un archivo:
-> `curl.exe -i -X POST ... --data-binary "@body.json"`.
+Cobertura (umbral configurado: statements 80 / branches 70 / functions 80 / lines 80):
+
+```
+All files   |   95.29 |    83.52 |   97.59 |   95.27
+```
+
+Los cuatro números están por encima del umbral — `pnpm test:coverage` termina
+con código de salida `0`.
+
+## Qué se testeó y cómo
+
+| Archivo | Tipo | Qué cubre |
+|---|---|---|
+| `inventory-items.service.test.ts` | Unit (repository mockeado) | Reglas de negocio: `assertWarehouseExists`, propagación de `AppError` |
+| `warehouses.service.test.ts` | Unit (repository mockeado) | Regla "no borrar bodega con ítems" (`countByWarehouse`) |
+| `auth.service.test.ts` | Unit (repository mockeado, bcrypt/JWT reales) | Hash de password, comparación de credenciales, **rotación real del refresh token** |
+| `requireRole.test.ts` | Unit (middleware puro) | 401 sin `req.user`, 403 con rol incorrecto, `next()` sin argumentos con el rol correcto |
+| `sanitize.test.ts` | Unit (middleware puro) | Limpieza de operadores `$` y claves con `.`, objetos anidados y arrays |
+| `auth.routes.test.ts` | Integración (Supertest + Mongo en memoria) | Ciclo completo register → login → me → refresh (con rotación) → logout, cookies HttpOnly reales |
+| `inventory-items.routes.test.ts` | Integración | CRUD completo, validaciones Zod, traducción de errores Mongo (`11000`/`CastError`), RBAC |
+| `warehouses.routes.test.ts` | Integración | CRUD completo, RBAC, regla de negocio "bodega con ítems" de punta a punta |
+| `security.routes.test.ts` | Integración | Cabeceras de Helmet, CORS (origen permitido/bloqueado), 404 en JSON |
+
+**Por qué "unit" mockea el repository y no la base de datos entera:** un
+test unitario prueba una unidad aislada — la lógica de negocio del
+`service`, no si Mongoose sabe conectarse a Mongo (eso ya lo prueba Mongoose
+en sus propios tests). Mockear el repository dice: "si el repository
+devuelve esto, el service debe decidir aquello" — rápido (no hay I/O real) y
+determinista.
+
+**Por qué "integración" sí usa una base de datos real (en memoria):**
+prueba lo que un mock no puede — que las rutas, el `errorHandler`, los
+middlewares de auth/RBAC y el repository (con las traducciones de error de
+Mongo de verdad) encajan entre sí. `mongodb-memory-server` descarga un
+`mongod` real y lo corre en un puerto libre — sin Docker, sin estado
+compartido entre archivos (cada `.test.ts` levanta el suyo).
+
+## Dos bugs reales que esta semana sacó a la luz
+
+Escribir estos tests no fue solo "confirmar que el código de las semanas
+07-08 estaba bien" — encontró dos bugs de verdad, ambos por la misma causa
+raíz: **firmar dos JWT con contenido idéntico da la MISMA firma** (HMAC es
+determinista) si no hay algo que los diferencie.
+
+1. **La rotación de refresh tokens ya se había roto una vez** (documentado
+   en `APUNTES-SEMANA-07.md`: bcrypt trunca a 72 bytes) y se arregló con
+   SHA-256. Al escribir el test unitario de rotación (`auth.service.test.ts`),
+   apareció una VARIANTE del mismo problema: dos refresh tokens del mismo
+   usuario, firmados dentro del mismo segundo (`iat` con resolución de
+   segundos), son **el mismo string** — no hay nada que los distinga. Eso
+   rompía tanto el test (no podía comprobar "el token nuevo es distinto del
+   viejo") como, en teoría, la rotación real bajo carga (dos refresh casi
+   simultáneos). Se corrigió agregando un `jti` (JWT ID) aleatorio a cada
+   refresh token (`src/utils/jwt.ts`) — mismo espíritu que la corrección de
+   la semana 07, encontrado por escribir el test, no por inspección.
+2. **`authLimiter` bloqueaba la propia suite de tests.** Los tests de
+   integración registran y loguean decenas de usuarios por archivo
+   (`createAuthenticatedAgent`); con el límite de producción activo
+   (5 login/register cada 15 min), el segundo `describe` de cada archivo ya
+   recibía `429` en vez de las respuestas que el test quería verificar. Se
+   agregó `skip: () => process.env.NODE_ENV === 'test'` a los dos limiters
+   (`src/config/security.ts`) — el comportamiento en dev/producción no
+   cambia; el rate limiting en sí ya tiene su propia evidencia con reloj
+   real en `docs/capturas/16-auth-rate-limit-429.txt` de la semana 08.
+
+## Reproducir
+
+```bash
+pnpm install
+pnpm test                # 01 — no necesita Docker ni MongoDB corriendo
+pnpm test:coverage        # 02 — abre coverage/index.html para el reporte visual
+pnpm build                 # 03
+```
+
+`pnpm test` (y `test:coverage`) no tocan la base de datos real del
+`docker-compose.yml` — cada suite de integración levanta su propio Mongo en
+memoria y lo apaga al terminar. `jest.setup.ts` fija
+`JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET` de prueba antes de correr nada.
