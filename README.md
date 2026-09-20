@@ -13,23 +13,111 @@ Cada semana se entrega en su propia rama `week-<NN>`.
 | 03 | [`week-03`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-03) | REST API Arquitectura en Capas |
 | 04 | [`week-04`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-04) | Validación, Errores y Logging |
 | 05 | [`week-05`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-05) | PostgreSQL + Prisma ORM |
-| 06 | `week-06` | MongoDB + Mongoose |
+| 06 | [`week-06`](https://github.com/nicolneira07-tech/bc-expressjs/tree/week-06) | MongoDB + Mongoose |
+| 07 | `week-07` | Autenticación JWT |
 
 ---
 
-## Semana 06 — API de inventario con MongoDB y Mongoose
+## Semana 07 — Autenticación JWT sobre la API de inventario
 
-La misma API de inventario, ahora sobre **MongoDB** con **Mongoose**:
-esquemas con validación embebida, `populate()` para la relación bodega-ítem,
-y traducción de los errores propios de Mongo (`11000`, `CastError`) a
-respuestas HTTP correctas.
+Se agrega un tercer recurso, `User` (empleados de la empresa de logística),
+con registro, login y sesiones basadas en **JWT + cookies HttpOnly**. Todo lo
+de la semana 06 sigue intacto (`Warehouse`, `InventoryItem`, Mongoose,
+Winston/Morgan) — lo único que cambia es que **ya no se puede usar la API sin
+haber iniciado sesión**: `warehousesRouter` e `inventoryItemsRouter` ganan un
+`router.use(authMiddleware)` al principio.
 
-Todo lo de la semana 04 sigue en pie (validación Zod, `AppError`,
-`errorHandler` de 4 parámetros, Winston + Morgan). Lo que cambió es **la capa
-de acceso a datos y el service** — el controller y las rutas no se tocaron.
-La diferencia frente a la semana 05 es que MongoDB no tiene claves foráneas:
-la regla "no crear un ítem en una bodega inexistente" y "no borrar una
-bodega con ítems" ya no las impone la base de datos — las impone el service.
+### Por qué JWT + cookies HttpOnly (y no `localStorage`)
+
+Un token en `localStorage` es legible por cualquier script que corra en la
+página — un XSS lo roba con una línea de JavaScript. Una cookie `HttpOnly` no
+la puede leer `document.cookie`; el navegador la adjunta solo. Dos tokens,
+cada uno con su propio secreto y su propio ciclo de vida:
+
+| Token | Duración | Dónde vive | Se manda en |
+|---|---|---|---|
+| `accessToken` | 15 min | Cookie `HttpOnly`, `Path=/` | Todas las peticiones a la API |
+| `refreshToken` | 7 días | Cookie `HttpOnly`, `Path=/api/v1/auth` | Solo `/auth/refresh` y `/auth/logout` |
+
+El `refreshToken` nunca se guarda en claro en la base: se guarda su
+**hash** (`User.refreshToken`), y cada `/refresh` genera un par nuevo e
+invalida el anterior (rotación) — si alguien roba un refresh token viejo, ya
+no sirve.
+
+### Endpoints — Auth (`/api/v1/auth`)
+
+| Método | Ruta | Descripción | Auth | Status |
+|---|---|---|---|---|
+| POST | `/register` | Crear cuenta (rol `operator` fijo) | Pública | 201 / 400 / 409 |
+| POST | `/login` | Emite `accessToken` + `refreshToken` en cookies | Pública | 200 / 401 |
+| GET | `/me` | Perfil del usuario autenticado | Cookie `accessToken` | 200 / 401 |
+| POST | `/refresh` | Rota el par de tokens | Cookie `refreshToken` | 200 / 401 |
+| POST | `/logout` | Invalida la sesión y limpia las cookies | Cookie `accessToken` | 200 / 401 |
+
+`warehouses` e `inventory-items` (ver tablas de la semana 06 más abajo) ahora
+requieren la cookie `accessToken` en **todas** sus rutas — sin sesión, `401`.
+
+```jsonc
+// POST /api/v1/auth/register → 201 (nunca devuelve el password/hash)
+{ "data": { "id": "...", "email": "nuevo.operador@almacen.com", "name": "Nuevo Operador", "role": "operator", "createdAt": "...", "updatedAt": "..." } }
+
+// POST /api/v1/auth/login → 200 + Set-Cookie: accessToken=...; HttpOnly; SameSite=Lax
+//                                Set-Cookie: refreshToken=...; Path=/api/v1/auth; HttpOnly; SameSite=Lax
+{ "message": "Login exitoso" }
+
+// GET /api/v1/inventory-items sin cookie → 401
+{ "error": "Application Error", "message": "No autenticado: falta el token de acceso" }
+
+// POST /api/v1/auth/refresh reusando un refresh token ya rotado → 401
+{ "error": "Application Error", "message": "Refresh token no coincide con la sesión activa" }
+```
+
+### Usuarios de prueba (creados por `pnpm db:seed`)
+
+| Email | Password | Rol |
+|---|---|---|
+| `operador@almacen.com` | `Operador123` | `operator` |
+| `admin@almacen.com` | `Admin1234` | `admin` (aún sin uso — llega en la semana 08 con RBAC) |
+
+### Seguridad aplicada
+
+- Passwords con `bcrypt` (10 salt rounds); nunca se devuelven (`select: false`
+  en el modelo).
+- `JWT_ACCESS_SECRET` ≠ `JWT_REFRESH_SECRET` — secretos independientes.
+- El registro público **no acepta `role`** en el body: si lo aceptara,
+  cualquiera podría auto-asignarse `admin`. Todo el que se registra entra
+  como `operator`.
+- Mismo mensaje de error para "email no existe" y "password incorrecto" en
+  login — evita user enumeration.
+- Refresh token: se guarda su hash (no el token en claro) y rota en cada uso;
+  reusar uno viejo invalida la sesión completa (posible token robado).
+
+### Cómo correr el proyecto
+
+```bash
+docker compose up -d                  # 1. MongoDB 7 en localhost:27017
+pnpm install                          # 2. dependencias
+cp .env.example .env                  # 3. variables de entorno + genera los dos JWT secrets
+pnpm db:seed                          # 4. 2 usuarios + 2 bodegas + 6 ítems
+pnpm dev                              # 5. servidor en localhost:3000
+```
+
+Variables nuevas en `.env.example`: `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+— generar cada una con `openssl rand -base64 64`, deben ser distintas.
+
+Flujo completo probado con `curl` (login → cookie → recurso protegido →
+refresh con rotación → logout): [`docs/capturas/`](docs/capturas/).
+
+---
+
+## Bodegas e ítems de inventario (desde la semana 06, sin cambios de negocio)
+
+La API de inventario sobre **MongoDB** con **Mongoose**: esquemas con
+validación embebida, `populate()` para la relación bodega-ítem, y traducción
+de los errores propios de Mongo (`11000`, `CastError`) a respuestas HTTP
+correctas. La única diferencia introducida en la semana 07 es que ahora
+**requieren sesión** (ver arriba) — el modelo, las validaciones y las reglas
+de negocio de estos dos recursos no cambiaron.
 
 ### Modelo de datos
 
@@ -171,63 +259,6 @@ convierte a `AppError` y a partir de ahí todo sigue el camino normal hacia el
 | Regla de negocio (`assertWarehouseExists`) | `warehouse` no existe (aunque el ObjectId sea válido) | `404` |
 | Regla de negocio (`countByWarehouse`) | Se intenta borrar una bodega con ítems | `409` |
 
-### Cómo correr el proyecto
-
-```bash
-docker compose up -d                  # 1. MongoDB 7 en localhost:27017
-pnpm install                          # 2. dependencias
-cp .env.example .env                  # 3. variables de entorno
-pnpm db:seed                          # 4. 2 bodegas + 6 ítems
-pnpm dev                              # 5. servidor en localhost:3000
-```
-
-Otro script: `pnpm build` (compila a `dist/`), `pnpm start` (corre el build).
-
-Variables de entorno (`.env.example`):
-
-| Variable | Valor por defecto | Uso |
-|---|---|---|
-| `MONGODB_URI` | `mongodb://bootcamp:bootcamp123@localhost:27017/bootcamp_dev?authSource=admin` | Conexión a MongoDB |
-| `PORT` | `3000` | Puerto del servidor |
-| `NODE_ENV` | `development` | Nivel/formato de logs, exposición del `stack` |
-
-> Las credenciales de `docker-compose.yml` son de desarrollo local y coinciden
-> con el starter del bootcamp. El `.env` real está en `.gitignore`.
-
-### Probar con curl
-
-Los `_id` de MongoDB son `ObjectId` generados al insertar (no correlativos
-como el `id` autoincremental de PostgreSQL), así que primero se resuelve el
-id real con un `GET`:
-
-```bash
-WH_BOG=$(curl -s http://localhost:3000/api/v1/warehouses | jq -r '.data[] | select(.code=="BOG-01") | .id')
-
-curl -i "http://localhost:3000/api/v1/inventory-items?page=1&limit=2"
-curl -i http://localhost:3000/api/v1/warehouses
-
-# Crear (201)
-curl -i -X POST http://localhost:3000/api/v1/inventory-items \
-  -H "Content-Type: application/json" \
-  -d "{\"sku\":\"ELE-0002\",\"name\":\"Montacargas electrico\",\"category\":\"electronics\",\"price\":15000,\"stock\":2,\"location\":\"F-01\",\"warehouse\":\"$WH_BOG\"}"
-
-# sku duplicado → 409 (11000)
-curl -i -X POST http://localhost:3000/api/v1/inventory-items \
-  -H "Content-Type: application/json" \
-  -d "{\"sku\":\"PKG-0001\",\"name\":\"Pallet duplicado\",\"category\":\"packaging\",\"price\":9,\"stock\":10,\"location\":\"A-02\",\"warehouse\":\"$WH_BOG\"}"
-
-# id que no es un ObjectId → 400
-curl -i http://localhost:3000/api/v1/inventory-items/abc
-
-# ObjectId válido pero inexistente → 404
-curl -i -X PUT http://localhost:3000/api/v1/inventory-items/64b000000000000000000000 \
-  -H "Content-Type: application/json" -d '{"stock":1}'
-curl -i -X DELETE http://localhost:3000/api/v1/inventory-items/64b000000000000000000000
-```
-
-> **En PowerShell**, `curl` es un alias de `Invoke-WebRequest` y además rompe
-> las comillas del JSON. Usa `curl.exe` y pasa el body desde un archivo:
-> `curl.exe -i -X POST ... --data-binary "@body.json"`.
-
-Salida completa de cada petición, del seed y de los logs:
-[`docs/capturas/`](docs/capturas/).
+> Todas las peticiones de ejemplo de esta sección ahora necesitan la cookie
+> `accessToken` (ver "Cómo correr el proyecto" y `docs/capturas/` arriba) —
+> sin ella, cualquiera de estas rutas responde `401`.

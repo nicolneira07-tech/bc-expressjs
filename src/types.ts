@@ -32,6 +32,15 @@ export interface InventoryItemView {
   updatedAt: Date;
 }
 
+export interface UserView {
+  id: string;
+  email: string;
+  name: string;
+  role: 'operator' | 'admin';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Contratos de respuesta (genéricos, no se adaptan al dominio)
 export interface SingleResponse<T> {
   data: T;

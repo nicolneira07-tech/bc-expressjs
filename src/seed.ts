@@ -14,10 +14,14 @@
 // resuelven el id real con un GET previo (ver docs/capturas/README.md).
 
 import 'dotenv/config';
+import bcrypt from 'bcrypt';
 import { connectDB, disconnectDB } from './lib/mongoose';
 import { logger } from './config/logger';
 import { Warehouse } from './models/warehouse.model';
 import { InventoryItem } from './models/inventory-item.model';
+import { User } from './models/user.model';
+
+const SALT_ROUNDS = 10;
 
 async function main(): Promise<void> {
   await connectDB();
@@ -25,6 +29,19 @@ async function main(): Promise<void> {
 
   await InventoryItem.deleteMany({});
   await Warehouse.deleteMany({});
+  await User.deleteMany({});
+
+  const [operatorPassword, adminPassword] = await Promise.all([
+    bcrypt.hash('Operador123', SALT_ROUNDS),
+    bcrypt.hash('Admin1234', SALT_ROUNDS),
+  ]);
+
+  const [operator, admin] = await User.insertMany([
+    { email: 'operador@almacen.com', password: operatorPassword, name: 'Operador de bodega', role: 'operator' },
+    { email: 'admin@almacen.com', password: adminPassword, name: 'Administrador', role: 'admin' },
+  ]);
+
+  logger.info(`  2 usuarios creados: ${operator!.email} (operator), ${admin!.email} (admin)`);
 
   const [bogota, medellin] = await Warehouse.insertMany([
     { code: 'BOG-01', name: 'Centro de distribución Bogotá', city: 'Bogotá' },

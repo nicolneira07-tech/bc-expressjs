@@ -1,7 +1,7 @@
 {
-  "name": "bc-expressjs-semana06-logistica",
+  "name": "bc-expressjs-semana07-logistica",
   "version": "1.0.0",
-  "description": "Proyecto semanal — API de inventario de almacén con MongoDB y Mongoose",
+  "description": "Proyecto semanal — API de inventario de almacén con autenticación JWT",
   "main": "dist/server.js",
   "engines": {
     "node": ">=22.0.0"
@@ -14,18 +14,29 @@
     "db:seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "bcrypt": "5.1.1",
+    "cookie-parser": "1.4.7",
     "dotenv": "16.5.0",
     "express": "5.1.0",
+    "jsonwebtoken": "9.0.2",
     "mongoose": "9.4.1",
     "morgan": "1.10.1",
     "winston": "3.19.0",
     "zod": "4.3.6"
   },
   "devDependencies": {
+    "@types/bcrypt": "5.0.2",
+    "@types/cookie-parser": "1.4.8",
     "@types/express": "5.0.3",
+    "@types/jsonwebtoken": "9.0.9",
     "@types/morgan": "1.9.10",
     "@types/node": "22.15.21",
     "tsx": "4.19.4",
     "typescript": "5.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt"
+    ]
   }
 }

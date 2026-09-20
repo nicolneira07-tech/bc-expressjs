@@ -1,11 +1,9 @@
-$ curl -i http://localhost:3000/api/v1/no-existe
-
 HTTP/1.1 404 Not Found
 X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
 Content-Length: 82
 ETag: W/"52-4lx+Oi84MmmZ8G0PpHjCNxXrbbY"
-Date: Sat, 05 Sep 2026 22:03:57 GMT
+Date: Sun, 20 Sep 2026 03:11:35 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
